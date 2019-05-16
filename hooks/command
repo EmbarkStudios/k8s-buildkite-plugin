@@ -7,15 +7,16 @@ basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 job_name="${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}-${BUILDKITE_JOB_ID}"
 
 function cleanup {
-  kubectl delete job "${job_name}"
+  # Delete all jobs older than a day
+  kubectl delete job $(kubectl get job -l buildkite/plugin=k8s | awk 'match($5,/[0-9]+d/) {print $1}') 2>/dev/null || true
 }
 trap cleanup EXIT
 
 
 function tail_logs {
   while true ; do
-    kubectl logs -f "job/${job_name}" 2>>/dev/null || true
-    sleep 0.3
+    kubectl logs --all-containers -f "job/${job_name}" 2>>/dev/null || true
+    sleep 0.5
   done
 }
 
@@ -31,4 +32,4 @@ echo "=== :kubernetes: Running step"
 
 tail_logs &
 kubectl wait --for=condition=complete "job/${job_name}"
-sleep 1
+sleep 0.5

@@ -3,5 +3,4 @@ steps:
     plugins:
       - "./.buildkite/plugins/k8s":
           image: alpine
-          init_image: alpine
           command: ["ls", "-1", "/"]
