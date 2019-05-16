@@ -1,0 +1,24 @@
+name: k8s
+description: Runs your build step as a kubernetes job
+author: https://github.com/dln
+requirements:
+- jq
+- jsonnet
+- kubectl
+configuration:
+  properties:
+    image:
+      type: string
+    command:
+      type: array
+    init-image:
+      type: string
+    secret-name:
+      type: string
+    ssh-secret-key:
+      type: string
+    agent-token-secret-key:
+      type: string
+  required:
+  - image
+  additionalProperties: false

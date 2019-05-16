@@ -1,0 +1,34 @@
+#!/bin/bash
+
+set -euo pipefail
+
+basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+
+job_name="${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}-${BUILDKITE_JOB_ID}"
+
+function cleanup {
+  kubectl delete job "${job_name}"
+}
+trap cleanup EXIT
+
+
+function tail_logs {
+  while true ; do
+    kubectl logs -f "job/${job_name}" 2>>/dev/null || true
+    sleep 0.3
+  done
+}
+
+echo "--- :kubernetes: Starting Kubernetes Job"
+
+jsonnet \
+  --tla-str "jobName=${job_name}" \
+  --tla-code "agentEnv=$(jq -c -n env)" \
+  "${basedir}/lib/job.jsonnet" \
+  | kubectl apply -f -
+
+echo "=== :kubernetes: Running step"
+
+tail_logs &
+kubectl wait --for=condition=complete "job/${job_name}"
+sleep 1
