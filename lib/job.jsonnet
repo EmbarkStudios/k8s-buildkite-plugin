@@ -1,4 +1,32 @@
-local envfilter(v) = if v != 'BUILDKITE_AGENT_ACCESS_TOKEN' && std.startsWith(v, 'BUILDKITE_') then true else false;
+local allowedEnvs = std.set(
+  [
+    'BUILDKITE_AGENT_ACCESS_TOKEN',
+    'BUILDKITE_JOB_ID',
+    'BUILDKITE_REPO',
+    'BUILDKITE_COMMIT',
+    'BUILDKITE_BRANCH',
+    'BUILDKITE_MESSAGE',
+    'BUILDKITE_BUILD_CREATOR',
+    'BUILDKITE_BUILD_CREATOR_EMAIL',
+    'BUILDKITE_BUILD_NUMBER',
+    'BUILDKITE_BUILD_PATH',
+    'BUILDKITE_BUILD_URL',
+    'BUILDKITE_TAG',
+    'BUILDKITE_AGENT_NAME',
+    'BUILDKITE_ORGANIZATION_SLUG',
+    'BUILDKITE_PIPELINE_SLUG',
+    'BUILDKITE_PIPELINE_PROVIDER',
+    'BUILDKITE_PROJECT_PROVIDER',
+    'BUILDKITE_PROJECT_SLUG',
+    'BUILDKITE_PULL_REQUEST',
+    'BUILDKITE_PULL_REQUEST_BASE_BRANCH',
+    'BUILDKITE_PULL_REQUEST_REPO',
+    'BUILDKITE_REBUILT_FROM_BUILD_ID',
+    'BUILDKITE_REBUILT_FROM_BUILD_NUMBER',
+    'BUILDKITE_REPO',
+    'BUILDKITE_SOURCE',
+  ]
+);
 
 function(jobName, agentEnv={}) {
   local env = {
@@ -10,7 +38,7 @@ function(jobName, agentEnv={}) {
     BUILDKITE_BUILD_PATH: '/buildkite/builds',
   },
 
-  local podEnv = [{ name: f, value: env[f] } for f in std.objectFields(env) if envfilter(f)] +
+  local podEnv = [{ name: f, value: env[f] } for f in std.objectFields(env) if std.setMember(f, allowedEnvs)] +
                  [
                    {
                      name: 'BUILDKITE_AGENT_TOKEN',
@@ -34,7 +62,6 @@ function(jobName, agentEnv={}) {
 
   local labels = {
     'build/branch': env.BUILDKITE_BRANCH,
-    'build/project': env.BUILDKITE_PROJECT_SLUG,
     'build/pipeline': env.BUILDKITE_PIPELINE_SLUG,
     'buildkite/plugin': 'k8s',
   },
@@ -47,6 +74,7 @@ function(jobName, agentEnv={}) {
     'build/url': env.BUILDKITE_BUILD_URL,
     'build/message': env.BUILDKITE_MESSAGE,
     'build/number': env.BUILDKITE_BUILD_NUMBER,
+    'build/project': env.BUILDKITE_PROJECT_SLUG,
     'build/repo': env.BUILDKITE_REPO,
     'build/source': env.BUILDKITE_SOURCE,
     'buildkite/agent-id': env.BUILDKITE_AGENT_ID,

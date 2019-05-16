@@ -1,5 +1,7 @@
 steps:
   - name: ":buildkite: test"
+    agents:
+      queue: 'dlntest-k8s'
     plugins:
       EmbarkStudios/k8s:
         image: alpine

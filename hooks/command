@@ -15,11 +15,14 @@ trap cleanup EXIT
 
 function tail_logs {
   while true ; do
-    kubectl logs --all-containers -f "job/${job_name}" 2>>/dev/null || true
+    # kubectl logs --all-containers -f "job/${job_name}" 2>>/dev/null || true
+    kubectl logs --all-containers -f "job/${job_name}" 1>&2 || true
     sleep 0.5
   done
 }
 
+echo "--- :hammer_and_wrench: Debug"
+env
 echo "--- :kubernetes: Starting Kubernetes Job"
 
 jsonnet \
@@ -30,6 +33,7 @@ jsonnet \
 
 echo "=== :kubernetes: Running step"
 
-tail_logs &
-kubectl wait --for=condition=complete "job/${job_name}"
-sleep 0.5
+kubectl wait --timeout=60s --for=condition=Ready "job/${job_name}"
+kubectl logs -f --all-containers "job/${job_name}" || true
+# kubectl wait --for=condition=complete "job/${job_name}"
+# sleep 0.5
