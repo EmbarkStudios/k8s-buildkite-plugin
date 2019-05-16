@@ -1,6 +1,6 @@
 steps:
   - name: ":buildkite: test"
     plugins:
-      - "./.buildkite/plugins/k8s":
-          image: alpine
-          command: ["ls", "-1", "/"]
+      EmbarkStudios/k8s:
+        image: alpine
+        command: ["ls", "-1", "/"]
