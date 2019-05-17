@@ -20,8 +20,6 @@ function tail_logs {
   done
 }
 
-echo "--- :hammer_and_wrench: Debug"
-env
 echo "--- :kubernetes: Starting Kubernetes Job"
 
 jsonnet \
