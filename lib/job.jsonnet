@@ -34,6 +34,7 @@ function(jobName, agentEnv={}) {
     BUILDKITE_PLUGIN_K8S_SSH_SECRET_KEY: 'ssh-key',
     BUILDKITE_PLUGIN_K8S_AGENT_TOKEN_SECRET_KEY: 'buildkite-agent-token',
     BUILDKITE_PLUGIN_K8S_INIT_IMAGE: 'embarkstudios/k8s-buildkite-agent',
+    BUILDKITE_PLUGIN_K8S_ALWAYS_PULL: false,
   } + agentEnv + {
     BUILDKITE_BUILD_PATH: '/buildkite/builds',
   },
@@ -103,7 +104,6 @@ function(jobName, agentEnv={}) {
           {
             name: 'bootstrap',
             image: env.BUILDKITE_PLUGIN_K8S_INIT_IMAGE,
-            imagePullPolicy: 'Always',
             args: ['bootstrap', '--command', 'true'],
             env: podEnv,
             volumeMounts: [{ mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' }],
@@ -113,6 +113,7 @@ function(jobName, agentEnv={}) {
           {
             name: 'step',
             image: env.BUILDKITE_PLUGIN_K8S_IMAGE,
+            imagePullPolicy: if env.BUILDKITE_PLUGIN_K8S_ALWAYS_PULL == 'true' then 'Always' else 'IfNotPresent',
             command: [env[f] for f in std.objectFields(env) if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_COMMAND_')],
             env: podEnv,
             volumeMounts: [{ mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' }],
