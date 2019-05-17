@@ -9,3 +9,6 @@ steps:
       EmbarkStudios/k8s:
         image: alpine
         command: ["ls", "-1", "/"]
+        environment:
+          - FOO=bar
+          - BAZ=tjosan hejsan

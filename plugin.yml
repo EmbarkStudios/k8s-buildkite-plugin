@@ -13,6 +13,8 @@ configuration:
       type: boolean
     command:
       type: array
+    environment:
+      type: array
     init-image:
       type: string
     secret-name:

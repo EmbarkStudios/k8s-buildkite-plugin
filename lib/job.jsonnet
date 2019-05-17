@@ -39,27 +39,40 @@ function(jobName, agentEnv={}) {
     BUILDKITE_BUILD_PATH: '/buildkite/builds',
   },
 
-  local podEnv = [{ name: f, value: env[f] } for f in std.objectFields(env) if std.setMember(f, allowedEnvs)] +
-                 [
-                   {
-                     name: 'BUILDKITE_AGENT_TOKEN',
-                     valueFrom: {
-                       secretKeyRef: {
-                         name: env.BUILDKITE_PLUGIN_K8S_SECRET_NAME,
-                         key: env.BUILDKITE_PLUGIN_K8S_AGENT_TOKEN_SECRET_KEY,
-                       },
-                     },
-                   },
-                   {
-                     name: 'SSH_PRIVATE_RSA_KEY',
-                     valueFrom: {
-                       secretKeyRef: {
-                         name: env.BUILDKITE_PLUGIN_K8S_SECRET_NAME,
-                         key: env.BUILDKITE_PLUGIN_K8S_SSH_SECRET_KEY,
-                       },
-                     },
-                   },
-                 ],
+  local podEnv =
+    [
+      { name: f, value: env[f] }
+      for f in std.objectFields(env)
+      if std.setMember(f, allowedEnvs)
+    ] +
+    [
+      {
+        name: 'BUILDKITE_AGENT_TOKEN',
+        valueFrom: {
+          secretKeyRef: {
+            name: env.BUILDKITE_PLUGIN_K8S_SECRET_NAME,
+            key: env.BUILDKITE_PLUGIN_K8S_AGENT_TOKEN_SECRET_KEY,
+          },
+        },
+      },
+      {
+        name: 'SSH_PRIVATE_RSA_KEY',
+        valueFrom: {
+          secretKeyRef: {
+            name: env.BUILDKITE_PLUGIN_K8S_SECRET_NAME,
+            key: env.BUILDKITE_PLUGIN_K8S_SSH_SECRET_KEY,
+          },
+        },
+      },
+    ] + [
+      {
+        local kv = std.splitLimit(env[f], '=', 1),
+        name: kv[0],
+        value: kv[1],
+      }
+      for f in std.objectFields(env)
+      if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT_')
+    ],
 
   local labels = {
     'build/branch': env.BUILDKITE_BRANCH,
