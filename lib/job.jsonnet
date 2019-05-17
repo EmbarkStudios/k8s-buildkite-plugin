@@ -35,6 +35,7 @@ function(jobName, agentEnv={}) {
     BUILDKITE_PLUGIN_K8S_AGENT_TOKEN_SECRET_KEY: 'buildkite-agent-token',
     BUILDKITE_PLUGIN_K8S_INIT_IMAGE: 'embarkstudios/k8s-buildkite-agent',
     BUILDKITE_PLUGIN_K8S_ALWAYS_PULL: false,
+    BUILDKITE_PLUGIN_K8S_PRIVILEGED: false,
   } + agentEnv + {
     BUILDKITE_BUILD_PATH: '/buildkite/builds',
   },
@@ -130,6 +131,9 @@ function(jobName, agentEnv={}) {
             command: [env[f] for f in std.objectFields(env) if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_ENTRYPOINT_')],
             args: [env[f] for f in std.objectFields(env) if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_COMMAND_')],
             env: podEnv,
+            securityContext: {
+              privileged: env.BUILDKITE_PLUGIN_K8S_PRIVILEGED,
+            },
             volumeMounts: [{ mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' }],
             workingDir: std.join('/', [env.BUILDKITE_BUILD_PATH, env.BUILDKITE_AGENT_NAME, env.BUILDKITE_ORGANIZATION_SLUG, env.BUILDKITE_PIPELINE_SLUG]),
           },

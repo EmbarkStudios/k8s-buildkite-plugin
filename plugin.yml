@@ -19,6 +19,8 @@ configuration:
       type: array
     init-image:
       type: string
+    privileged:
+      type: boolean
     secret-name:
       type: string
     ssh-secret-key:
