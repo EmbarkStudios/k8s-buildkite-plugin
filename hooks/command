@@ -32,3 +32,4 @@ echo "+++ :kubernetes: Running image: ${BUILDKITE_PLUGIN_K8S_IMAGE}"
 
 tail_logs &
 kubectl wait --for=condition=complete "job/${job_name}"
+kill %1
