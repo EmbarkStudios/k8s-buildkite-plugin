@@ -1,3 +1,6 @@
+foo:
+  bar: foobar
+  baz: some other stuff
 steps:
   - name: ":buildkite: test"
     agents:
