@@ -27,6 +27,8 @@ configuration:
       type: string
     agent-token-secret-key:
       type: string
+    workdir:
+      type: string
   required:
   - image
   additionalProperties: false

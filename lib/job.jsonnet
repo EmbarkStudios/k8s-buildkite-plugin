@@ -36,6 +36,12 @@ function(jobName, agentEnv={}) {
     BUILDKITE_PLUGIN_K8S_INIT_IMAGE: 'embarkstudios/k8s-buildkite-agent',
     BUILDKITE_PLUGIN_K8S_ALWAYS_PULL: false,
     BUILDKITE_PLUGIN_K8S_PRIVILEGED: false,
+    BUILDKITE_PLUGIN_K8S_WORKDIR: std.join('/', [
+      env.BUILDKITE_BUILD_PATH,
+      env.BUILDKITE_AGENT_NAME,
+      env.BUILDKITE_ORGANIZATION_SLUG,
+      env.BUILDKITE_PIPELINE_SLUG,
+    ]),
   } + agentEnv + {
     BUILDKITE_BUILD_PATH: '/buildkite/builds',
   },
@@ -135,7 +141,7 @@ function(jobName, agentEnv={}) {
               privileged: env.BUILDKITE_PLUGIN_K8S_PRIVILEGED,
             },
             volumeMounts: [{ mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' }],
-            workingDir: std.join('/', [env.BUILDKITE_BUILD_PATH, env.BUILDKITE_AGENT_NAME, env.BUILDKITE_ORGANIZATION_SLUG, env.BUILDKITE_PIPELINE_SLUG]),
+            workingDir: env.BUILDKITE_PLUGIN_K8S_WORKDIR,
           },
         ],
         volumes: [{ name: 'build', emptyDir: {} }],
