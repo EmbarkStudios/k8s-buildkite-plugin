@@ -9,7 +9,8 @@ steps:
       EmbarkStudios/k8s:
         image: alpine
         entrypoint: ["sh"]
-        command: ["-c", "uname -a; env; ls;"]
+        command: ["-c", "df -h"]
+        git-credentials-secret-key: git-credentials
         environment:
           - FOO=bar
           - BAZ=tjosan hejsan

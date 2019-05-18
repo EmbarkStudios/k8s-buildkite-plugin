@@ -29,7 +29,8 @@ local allowedEnvs = std.set(
 function(jobName, agentEnv={}) {
   local env = {
     BUILDKITE_PLUGIN_K8S_SECRET_NAME: 'buildkite',
-    BUILDKITE_PLUGIN_K8S_SSH_SECRET_KEY: 'ssh-key',
+    BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_KEY: '',
+    BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_KEY: 'git-ssh-key',
     BUILDKITE_PLUGIN_K8S_AGENT_TOKEN_SECRET_KEY: 'buildkite-agent-token',
     BUILDKITE_PLUGIN_K8S_INIT_IMAGE: 'embarkstudios/k8s-buildkite-agent',
     BUILDKITE_PLUGIN_K8S_ALWAYS_PULL: false,
@@ -67,7 +68,7 @@ function(jobName, agentEnv={}) {
         valueFrom: {
           secretKeyRef: {
             name: env.BUILDKITE_PLUGIN_K8S_SECRET_NAME,
-            key: env.BUILDKITE_PLUGIN_K8S_SSH_SECRET_KEY,
+            key: env.BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_KEY,
           },
         },
       },
@@ -111,6 +112,22 @@ function(jobName, agentEnv={}) {
     else { emptyDir: {} }
   ,
 
+  local gitCredentials = {
+    mount:
+      if env.BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_KEY == '' then []
+      else [{ mountPath: '/root/.git-credentials', name: 'git-credentials', subPath: '.git-credentials' }],
+    volume:
+      if env.BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_KEY == '' then []
+      else [{
+        name: 'git-credentials',
+        secret: {
+          defaultMode: 420,
+          secretName: env.BUILDKITE_PLUGIN_K8S_SECRET_NAME,
+          items: [{ key: env.BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_KEY, path: '.git-credentials' }],
+        },
+      }],
+  },
+
   apiVersion: 'batch/v1',
   kind: 'Job',
   metadata: {
@@ -132,9 +149,12 @@ function(jobName, agentEnv={}) {
           {
             name: 'bootstrap',
             image: env.BUILDKITE_PLUGIN_K8S_INIT_IMAGE,
+            imagePullPolicy: 'Always',
             args: ['bootstrap', '--command', 'true'],
             env: podEnv,
-            volumeMounts: [{ mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' }],
+            volumeMounts: [
+              { mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' },
+            ] + gitCredentials.mount,
           },
         ],
         containers: [
@@ -152,7 +172,9 @@ function(jobName, agentEnv={}) {
             workingDir: env.BUILDKITE_PLUGIN_K8S_WORKDIR,
           },
         ],
-        volumes: [{ name: 'build' } + buildVolume],
+        volumes: [
+          { name: 'build' } + buildVolume,
+        ] + gitCredentials.volume,
       },
     },
   },

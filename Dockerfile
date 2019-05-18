@@ -14,4 +14,6 @@ COPY --from=buildkite /usr/local/bin/buildkite-agent /usr/local/bin/buildkite-ag
 
 COPY --from=jsonnet /jsonnet /usr/local/bin/jsonnet
 
+COPY buildkite-agent.gitconfig /root/.gitconfig
+
 ENTRYPOINT [ "/usr/local/bin/buildkite-agent" ]

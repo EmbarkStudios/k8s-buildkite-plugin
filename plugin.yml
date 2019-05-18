@@ -23,7 +23,9 @@ configuration:
       type: boolean
     secret-name:
       type: string
-    ssh-secret-key:
+    git-credentials-secret-key:
+      type: string
+    git-ssh-secret-key:
       type: string
     agent-token-secret-key:
       type: string
