@@ -4,7 +4,7 @@ FROM mexisme/jsonnet:alpine AS jsonnet
 
 FROM alpine
 
-RUN apk add --no-cache bash coreutils curl git libstdc++ jq
+RUN apk add --no-cache bash coreutils curl git jq libstdc++ openssh
 
 ENV K8S_VERSION="v1.14.1"
 RUN curl -sfL https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl && \
