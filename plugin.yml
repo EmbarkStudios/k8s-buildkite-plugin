@@ -23,7 +23,11 @@ configuration:
       type: boolean
     secret-name:
       type: string
+    git-credentials-secret-name:
+      type: string
     git-credentials-secret-key:
+      type: string
+    git-ssh-secret-name:
       type: string
     git-ssh-secret-key:
       type: string

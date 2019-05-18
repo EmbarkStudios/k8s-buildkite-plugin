@@ -30,7 +30,9 @@ function(jobName, agentEnv={}) {
   local env = {
     BUILDKITE_PLUGIN_K8S_SECRET_NAME: 'buildkite',
     BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_KEY: '',
+    BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_NAME: '',
     BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_KEY: '',
+    BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_NAME: '',
     BUILDKITE_PLUGIN_K8S_AGENT_TOKEN_SECRET_KEY: 'buildkite-agent-token',
     BUILDKITE_PLUGIN_K8S_INIT_IMAGE: 'embarkstudios/k8s-buildkite-agent',
     BUILDKITE_PLUGIN_K8S_ALWAYS_PULL: false,
@@ -113,7 +115,10 @@ function(jobName, agentEnv={}) {
         name: 'git-credentials',
         secret: {
           defaultMode: 256,
-          secretName: env.BUILDKITE_PLUGIN_K8S_SECRET_NAME,
+          secretName:
+            if env.BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_NAME != ''
+            then env.BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_NAME
+            else env.BUILDKITE_PLUGIN_K8S_SECRET_NAME,
           items: [{ key: env.BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_KEY, path: 'git-credentials' }],
         },
       }],
@@ -129,7 +134,10 @@ function(jobName, agentEnv={}) {
         name: 'git-ssh-key',
         secret: {
           defaultMode: 256,
-          secretName: env.BUILDKITE_PLUGIN_K8S_SECRET_NAME,
+          secretName:
+            if env.BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_NAME != ''
+            then env.BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_NAME
+            else env.BUILDKITE_PLUGIN_K8S_SECRET_NAME,
           items: [{ key: env.BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_KEY, path: 'ssh-key' }],
         },
       }],
