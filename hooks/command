@@ -15,7 +15,7 @@ trap cleanup EXIT
 
 function tail_logs {
   while true ; do
-    stdbuf -oL -eL kubectl logs -f "job/${job_name}" 2>>/dev/null || true
+    stdbuf -o0 -e0 kubectl logs -f "job/${job_name}" 2>>/dev/null && break
     sleep 0.2
   done
 }
@@ -31,5 +31,25 @@ jsonnet \
 echo "+++ :kubernetes: Running image: ${BUILDKITE_PLUGIN_K8S_IMAGE}"
 
 tail_logs &
-kubectl wait --for=condition=complete "job/${job_name}"
-sleep 0.2
+
+sleeper=2
+timeout=300
+counter=${timeout}
+jobstatus=""
+while [[ -z "$jobstatus" ]] ; do
+  jobstatus=$(kubectl get job "${job_name}" -o 'jsonpath={.status.conditions[].type}')
+  sleep $sleeper
+  if [[ $timeout -gt 0 ]]; then
+    (( counter -= sleeper )) || jobstatus="timeout"
+  fi
+done
+
+echo
+echo "--- :kubernetes: Job status: $jobstatus"
+status=1
+if [[ "$jobstatus" == "Complete" ]] ; then
+  echo "success"
+  status=0
+fi
+
+exit $status

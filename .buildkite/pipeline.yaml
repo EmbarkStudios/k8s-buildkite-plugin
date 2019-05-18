@@ -8,8 +8,7 @@ steps:
     plugins:
       EmbarkStudios/k8s:
         image: alpine
-        entrypoint: ["sh"]
-        command: ["-c", "df -h"]
+        command: ["sh", "-c", "uname -a"]
         git-credentials-secret-key: git-credentials
         git-ssh-secret-key: git-ssh-key
         environment:
