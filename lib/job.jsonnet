@@ -33,6 +33,8 @@ function(jobName, agentEnv={}) {
     BUILDKITE_PLUGIN_K8S_AGENT_TOKEN_SECRET_KEY: 'buildkite-agent-token',
     BUILDKITE_PLUGIN_K8S_INIT_IMAGE: 'embarkstudios/k8s-buildkite-agent',
     BUILDKITE_PLUGIN_K8S_ALWAYS_PULL: false,
+    BUILDKITE_PLUGIN_K8S_BUILD_PATH_HOST_PATH: '',
+    BUILDKITE_PLUGIN_K8S_BUILD_PATH_PVC: '',
     BUILDKITE_PLUGIN_K8S_PRIVILEGED: false,
     BUILDKITE_PLUGIN_K8S_WORKDIR: std.join('/', [
       env.BUILDKITE_BUILD_PATH,
@@ -101,6 +103,14 @@ function(jobName, agentEnv={}) {
     'job-name': jobName,
   },
 
+  local buildVolume =
+    if env.BUILDKITE_PLUGIN_K8S_BUILD_PATH_PVC != ''
+    then { persistentVolumeClaim: { claimName: env.BUILDKITE_PLUGIN_K8S_BUILD_PATH_PVC } }
+    else if env.BUILDKITE_PLUGIN_K8S_BUILD_PATH_HOST_PATH != ''
+    then { hostPath: { path: env.BUILDKITE_PLUGIN_K8S_BUILD_PATH_HOST_PATH, type: 'DirectoryOrCreate' } }
+    else { emptyDir: {} }
+  ,
+
   apiVersion: 'batch/v1',
   kind: 'Job',
   metadata: {
@@ -142,7 +152,7 @@ function(jobName, agentEnv={}) {
             workingDir: env.BUILDKITE_PLUGIN_K8S_WORKDIR,
           },
         ],
-        volumes: [{ name: 'build', emptyDir: {} }],
+        volumes: [{ name: 'build' } + buildVolume],
       },
     },
   },

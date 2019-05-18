@@ -8,8 +8,8 @@ steps:
     plugins:
       EmbarkStudios/k8s:
         image: alpine
-        entrypoint: ["ls"]
-        command: ["-1", "/"]
+        entrypoint: ["sh"]
+        command: ["-c", "uname -a; env; ls;"]
         environment:
           - FOO=bar
           - BAZ=tjosan hejsan

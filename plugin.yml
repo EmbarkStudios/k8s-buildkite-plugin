@@ -27,6 +27,10 @@ configuration:
       type: string
     agent-token-secret-key:
       type: string
+    build-path-host-path:
+      type: string
+    build-path-pvc:
+      type: string
     workdir:
       type: string
   required:
