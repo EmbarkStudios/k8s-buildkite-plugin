@@ -150,7 +150,7 @@ function(jobName, agentEnv={}) {
             name: 'bootstrap',
             image: env.BUILDKITE_PLUGIN_K8S_INIT_IMAGE,
             imagePullPolicy: 'Always',
-            args: ['bootstrap', '--command', 'true'],
+            args: ['bootstrap', '--ssh-keyscan', '--command', 'true'],
             env: podEnv,
             volumeMounts: [
               { mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' },
