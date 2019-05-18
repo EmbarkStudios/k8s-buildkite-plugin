@@ -11,6 +11,7 @@ steps:
         entrypoint: ["sh"]
         command: ["-c", "df -h"]
         git-credentials-secret-key: git-credentials
+        git-ssh-secret-key: git-ssh-key
         environment:
           - FOO=bar
           - BAZ=tjosan hejsan

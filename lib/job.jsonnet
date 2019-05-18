@@ -30,7 +30,7 @@ function(jobName, agentEnv={}) {
   local env = {
     BUILDKITE_PLUGIN_K8S_SECRET_NAME: 'buildkite',
     BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_KEY: '',
-    BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_KEY: 'git-ssh-key',
+    BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_KEY: '',
     BUILDKITE_PLUGIN_K8S_AGENT_TOKEN_SECRET_KEY: 'buildkite-agent-token',
     BUILDKITE_PLUGIN_K8S_INIT_IMAGE: 'embarkstudios/k8s-buildkite-agent',
     BUILDKITE_PLUGIN_K8S_ALWAYS_PULL: false,
@@ -60,15 +60,6 @@ function(jobName, agentEnv={}) {
           secretKeyRef: {
             name: env.BUILDKITE_PLUGIN_K8S_SECRET_NAME,
             key: env.BUILDKITE_PLUGIN_K8S_AGENT_TOKEN_SECRET_KEY,
-          },
-        },
-      },
-      {
-        name: 'SSH_PRIVATE_RSA_KEY',
-        valueFrom: {
-          secretKeyRef: {
-            name: env.BUILDKITE_PLUGIN_K8S_SECRET_NAME,
-            key: env.BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_KEY,
           },
         },
       },
@@ -115,15 +106,31 @@ function(jobName, agentEnv={}) {
   local gitCredentials = {
     mount:
       if env.BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_KEY == '' then []
-      else [{ mountPath: '/root/.git-credentials', name: 'git-credentials', subPath: '.git-credentials' }],
+      else [{ mountPath: '/secrets/git-credentials', name: 'git-credentials', subPath: 'git-credentials' }],
     volume:
       if env.BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_KEY == '' then []
       else [{
         name: 'git-credentials',
         secret: {
-          defaultMode: 420,
+          defaultMode: 256,
           secretName: env.BUILDKITE_PLUGIN_K8S_SECRET_NAME,
-          items: [{ key: env.BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_KEY, path: '.git-credentials' }],
+          items: [{ key: env.BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_KEY, path: 'git-credentials' }],
+        },
+      }],
+  },
+
+  local gitSSH = {
+    mount:
+      if env.BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_KEY == '' then []
+      else [{ mountPath: '/secrets/ssh-key', name: 'git-ssh-key', subPath: 'ssh-key' }],
+    volume:
+      if env.BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_KEY == '' then []
+      else [{
+        name: 'git-ssh-key',
+        secret: {
+          defaultMode: 256,
+          secretName: env.BUILDKITE_PLUGIN_K8S_SECRET_NAME,
+          items: [{ key: env.BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_KEY, path: 'ssh-key' }],
         },
       }],
   },
@@ -154,7 +161,7 @@ function(jobName, agentEnv={}) {
             env: podEnv,
             volumeMounts: [
               { mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' },
-            ] + gitCredentials.mount,
+            ] + gitCredentials.mount + gitSSH.mount,
           },
         ],
         containers: [
@@ -174,7 +181,7 @@ function(jobName, agentEnv={}) {
         ],
         volumes: [
           { name: 'build' } + buildVolume,
-        ] + gitCredentials.volume,
+        ] + gitCredentials.volume + gitSSH.volume,
       },
     },
   },
