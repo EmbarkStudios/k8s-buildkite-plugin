@@ -2,7 +2,10 @@ foo:
   bar: foobar
   baz: some other stuff
 steps:
-  - command: "echo 'Hello, World!'"
+  - commands:
+      - uname -a
+      - echo 'Hello, World!'
+      - env
     agents:
       queue: 'dlntest-k8s'
     plugins:
