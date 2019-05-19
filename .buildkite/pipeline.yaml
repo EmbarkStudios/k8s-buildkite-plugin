@@ -8,6 +8,5 @@ steps:
     plugins:
       - EmbarkStudios/k8s:
           image: alpine
-          command: ['echo', "hello, world"]
           git-credentials-secret-key: git-credentials
           git-ssh-secret-key: git-ssh-key

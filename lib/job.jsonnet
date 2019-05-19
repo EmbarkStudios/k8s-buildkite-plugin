@@ -151,6 +151,15 @@ function(jobName, agentEnv={}) {
       }],
   },
 
+  local commandArgs =
+    if env.BUILDKITE_COMMAND != '' then {
+      command: ['/bin/sh', '-c'],
+      args: [env.BUILDKITE_COMMAND],
+    } else {
+      command: [env[f] for f in std.objectFields(env) if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_ENTRYPOINT_')],
+      args: [env[f] for f in std.objectFields(env) if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_COMMAND_')],
+    },
+
   apiVersion: 'batch/v1',
   kind: 'Job',
   metadata: {
@@ -185,8 +194,6 @@ function(jobName, agentEnv={}) {
             name: 'step',
             image: env.BUILDKITE_PLUGIN_K8S_IMAGE,
             imagePullPolicy: if env.BUILDKITE_PLUGIN_K8S_ALWAYS_PULL == 'true' then 'Always' else 'IfNotPresent',
-            command: [env[f] for f in std.objectFields(env) if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_ENTRYPOINT_')],
-            args: [env[f] for f in std.objectFields(env) if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_COMMAND_')],
             env: podEnv,
             envFrom: secretEnv,
             securityContext: {
@@ -194,7 +201,7 @@ function(jobName, agentEnv={}) {
             },
             volumeMounts: [{ mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' }],
             workingDir: env.BUILDKITE_PLUGIN_K8S_WORKDIR,
-          },
+          } + commandArgs,
         ],
         volumes: [
           { name: 'build' } + buildVolume,
