@@ -17,6 +17,8 @@ configuration:
       type: array
     environment:
       type: array
+    environment-from-secret:
+      type: [string, array]
     init-image:
       type: string
     privileged:

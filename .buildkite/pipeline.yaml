@@ -8,9 +8,10 @@ steps:
     plugins:
       EmbarkStudios/k8s:
         image: alpine
-        command: ["sh", "-c", "uname -a"]
+        command: ["sh", "-c", "uname -a; env | sort"]
         git-credentials-secret-key: git-credentials
         git-ssh-secret-key: git-ssh-key
+        environment-from-secret: test1
         environment:
           - FOO=bar
           - BAZ=tjosan hejsan

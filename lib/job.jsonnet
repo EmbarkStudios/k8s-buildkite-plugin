@@ -73,6 +73,14 @@ function(jobName, agentEnv={}) {
       }
       for f in std.objectFields(env)
       if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT_')
+         && !std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT_FROM_SECRET')
+    ],
+
+  local secretEnv =
+    [
+      { secretRef: { name: env[f] } }
+      for f in std.objectFields(env)
+      if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT_FROM_SECRET')
     ],
 
   local labels = {
@@ -180,6 +188,7 @@ function(jobName, agentEnv={}) {
             command: [env[f] for f in std.objectFields(env) if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_ENTRYPOINT_')],
             args: [env[f] for f in std.objectFields(env) if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_COMMAND_')],
             env: podEnv,
+            envFrom: secretEnv,
             securityContext: {
               privileged: env.BUILDKITE_PLUGIN_K8S_PRIVILEGED,
             },
