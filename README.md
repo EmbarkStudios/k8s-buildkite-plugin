@@ -1,5 +1,7 @@
 # Kubernetes Buildkite Plugin
 
+[![Build Status](https://badge.buildkite.com/c061bcad854e7a95c03d1baebfab8a01dc25768dab272dd8e5.svg)](https://buildkite.com/embark-studios/k8s-buildkite-plugin)
+
 An opinionated [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pipeline steps as [Kubernetes Jobs](https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/) on a cluster with minimal effort.
 
 The plugin tries to stay reasonably compatible with the [Docker plugin](https://github.com/buildkite-plugins/docker-buildkite-plugin) to make it easy to change pipelines to run on a cluster. It also takes lots of inspiration from the [kustomize-job-buildkite-plugin](https://github.com/MYOB-Technology/kustomize-job-buildkite-plugin).
