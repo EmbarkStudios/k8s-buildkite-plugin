@@ -165,19 +165,20 @@ function(jobName, agentEnv={}, stepEnvFile='') {
   },
 
   local secretMount = {
-    local mv = std.splitLimit(env.BUILDKITE_PLUGIN_K8S_MOUNT_SECRET, ':', 1),
-    mount:
-      if std.length(mv) < 2 then []
-      else [{ mountPath: mv[1], name: mv[0] }],
-    volume:
-      if std.length(mv) < 2 then []
-      else [{
-        name: mv[0],
-        secret: {
-          defaultMode: 256,
-          secretName: mv[0],
-        },
-      }],
+    local cfg = [
+      std.splitLimit(env[f], ':', 1)
+      for f in std.objectFields(env)
+      if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_MOUNT_SECRET')
+         && env[f] != ''
+    ],
+    mount: [
+      { name: c[0], mountPath: c[1] }
+      for c in cfg
+    ],
+    volume: [
+      { name: c[0], secret: { secretName: c[0], defaultMode: 256 } }
+      for c in cfg
+    ],
   },
 
   local commandArgs =

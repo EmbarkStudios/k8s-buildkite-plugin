@@ -22,7 +22,7 @@ configuration:
     init-image:
       type: string
     mount-secret:
-      type: [string]
+      type: [string, array]
     privileged:
       type: boolean
     secret-name:

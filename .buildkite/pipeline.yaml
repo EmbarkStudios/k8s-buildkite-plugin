@@ -5,9 +5,9 @@ steps:
       - uname -a
       - echo 'Hello, World!'
       - ls -lR /foo
-      - cat /foo/bar/foo
-      - cat /foo/bar/bar
     plugins:
       - EmbarkStudios/k8s:
           image: alpine
-          mount-secret: dlntest:/foo/bar
+          mount-secret:
+            - dlntest:/foo/bar
+            - dlntest2:/foo/baz
