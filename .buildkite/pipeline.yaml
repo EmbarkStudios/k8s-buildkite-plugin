@@ -4,9 +4,12 @@ foo:
 steps:
   - agents:
       queue: 'dlntest-k8s'
+    commands:
+      - "env | sort"
+    env:
+      MY_SPECIAL_BUT_PUBLIC_VALUE: kittens
     plugins:
       - EmbarkStudios/k8s:
-          image: embarkstudios/fortune
-          command: ["startrek"]
+          image: alpine
           git-credentials-secret-key: git-credentials
           git-ssh-secret-key: git-ssh-key

@@ -26,7 +26,7 @@ local allowedEnvs = std.set(
   ]
 );
 
-function(jobName, agentEnv={}) {
+function(jobName, agentEnv={}, stepEnvFile='') {
   local env = {
     BUILDKITE_PLUGIN_K8S_SECRET_NAME: 'buildkite',
     BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_KEY: '',
@@ -49,7 +49,19 @@ function(jobName, agentEnv={}) {
     BUILDKITE_BUILD_PATH: '/buildkite/builds',
   },
 
+  local stepEnv =
+    [
+      {
+        local kv = std.splitLimit(l, '=', 1),
+        name: kv[0],
+        value: kv[1],
+      }
+      for l in std.split(stepEnvFile, '\n')
+      if l != '' && !std.startsWith(l, 'BUILDKITE')
+    ],
+
   local podEnv =
+    stepEnv +
     [
       { name: f, value: env[f] }
       for f in std.objectFields(env)

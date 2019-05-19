@@ -24,6 +24,7 @@ echo "--- :kubernetes: Starting Kubernetes Job ($(kubectl config current-context
 
 jsonnet \
   --tla-str "jobName=${job_name}" \
+  --tla-str-file "stepEnvFile=${BUILDKITE_ENV_FILE}" \
   --tla-code "agentEnv=$(jq -c -n env)" \
   "${basedir}/lib/job.jsonnet" \
   | kubectl apply -f -
