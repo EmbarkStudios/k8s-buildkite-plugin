@@ -4,9 +4,12 @@ steps:
       queue: k8s
     plugins:
       - EmbarkStudios/k8s#0.9.2:
-          image: gcr.io/kaniko-project/executor:debug
+          image: gcr.io/kaniko-project/executor:latest
           command:
-            - --context=dir://$PWD
             - --destination=embarkstudios/k8s-buildkite-agent
+            - --context=dir://$PWD
+            - --reproducible
+            - --cache=true
+            - --cache-dir=$BUILDKITE_BUILD_PATH/_kaniko_cache
           mount-secret:
             - docker-hub-credentials:/kaniko/.docker
