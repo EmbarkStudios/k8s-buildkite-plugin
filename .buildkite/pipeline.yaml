@@ -2,16 +2,12 @@ foo:
   bar: foobar
   baz: some other stuff
 steps:
-  - name: ":buildkite: test"
+  - command: "echo 'Hello, World!'"
     agents:
       queue: 'dlntest-k8s'
     plugins:
-      EmbarkStudios/k8s:
-        image: alpine
-        command: ["sh", "-c", "uname -a; env | sort"]
-        git-credentials-secret-key: git-credentials
-        git-ssh-secret-key: git-ssh-key
-        environment-from-secret: test1
-        environment:
-          - FOO=bar
-          - BAZ=tjosan hejsan
+      - EmbarkStudios/k8s:
+          image: alpine
+          command: ['echo', "hello, world"]
+          git-credentials-secret-key: git-credentials
+          git-ssh-secret-key: git-ssh-key
