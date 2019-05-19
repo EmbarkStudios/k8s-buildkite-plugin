@@ -38,6 +38,7 @@ function(jobName, agentEnv={}, stepEnvFile='') {
     BUILDKITE_PLUGIN_K8S_ALWAYS_PULL: false,
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_HOST_PATH: '',
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_PVC: '',
+    BUILDKITE_PLUGIN_K8S_MOUNT_SECRET: '',
     BUILDKITE_PLUGIN_K8S_PRIVILEGED: false,
     BUILDKITE_PLUGIN_K8S_WORKDIR: std.join('/', [
       env.BUILDKITE_BUILD_PATH,
@@ -163,6 +164,22 @@ function(jobName, agentEnv={}, stepEnvFile='') {
       }],
   },
 
+  local secretMount = {
+    local mv = std.splitLimit(env.BUILDKITE_PLUGIN_K8S_MOUNT_SECRET, ':', 1),
+    mount:
+      if std.length(mv) < 2 then []
+      else [{ mountPath: mv[1], name: mv[0] }],
+    volume:
+      if std.length(mv) < 2 then []
+      else [{
+        name: mv[0],
+        secret: {
+          defaultMode: 256,
+          secretName: mv[0],
+        },
+      }],
+  },
+
   local commandArgs =
     if env.BUILDKITE_COMMAND != '' then {
       command: ['/bin/sh', '-c'],
@@ -210,13 +227,13 @@ function(jobName, agentEnv={}, stepEnvFile='') {
             securityContext: {
               privileged: env.BUILDKITE_PLUGIN_K8S_PRIVILEGED,
             },
-            volumeMounts: [{ mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' }],
+            volumeMounts: [{ mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' }] + secretMount.mount,
             workingDir: env.BUILDKITE_PLUGIN_K8S_WORKDIR,
           } + commandArgs,
         ],
         volumes: [
           { name: 'build' } + buildVolume,
-        ] + gitCredentials.volume + gitSSH.volume,
+        ] + gitCredentials.volume + gitSSH.volume + secretMount.volume,
       },
     },
   },

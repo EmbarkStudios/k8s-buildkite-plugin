@@ -125,6 +125,12 @@ The name of the secret containing the git credentials used for checking out sour
 
 The key of the secret value containing the SSH key used when checking out source code with SSH as transport.
 
+### `mount-secret` (optional, string)
+
+Mount a secret as a directory inside the container. Must be in the form of `secretName:/some/mount/path`.
+
+Example: `my-secret:/my/secrets`
+
 ### `build-path-host-path` (optional, string)
 
 Optionally mount a [host path](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath) to be used as base directory for buildkite builds. This allows local caching and incremental builds using fast local storage.
