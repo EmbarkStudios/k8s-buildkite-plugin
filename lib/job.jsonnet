@@ -34,7 +34,7 @@ function(jobName, agentEnv={}, stepEnvFile='') {
     BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_KEY: '',
     BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_NAME: '',
     BUILDKITE_PLUGIN_K8S_AGENT_TOKEN_SECRET_KEY: 'buildkite-agent-token',
-    BUILDKITE_PLUGIN_K8S_INIT_IMAGE: 'embarkstudios/k8s-buildkite-agent',
+    BUILDKITE_PLUGIN_K8S_INIT_IMAGE: 'embarkstudios/k8s-buildkite-agent@sha256:0792a9e3d9a77193692ef82f2ba1ee53a8c064b3259c6d4b7d5b1f44defad97b',
     BUILDKITE_PLUGIN_K8S_ALWAYS_PULL: false,
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_HOST_PATH: '',
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_PVC: '',
@@ -193,7 +193,6 @@ function(jobName, agentEnv={}, stepEnvFile='') {
           {
             name: 'bootstrap',
             image: env.BUILDKITE_PLUGIN_K8S_INIT_IMAGE,
-            imagePullPolicy: 'Always',
             args: ['bootstrap', '--ssh-keyscan', '--command', 'true'],
             env: podEnv,
             volumeMounts: [
