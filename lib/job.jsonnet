@@ -46,9 +46,7 @@ function(jobName, agentEnv={}, stepEnvFile='') {
       env.BUILDKITE_ORGANIZATION_SLUG,
       env.BUILDKITE_PIPELINE_SLUG,
     ]),
-  } + agentEnv + {
-    BUILDKITE_BUILD_PATH: '/buildkite/builds',
-  },
+  } + agentEnv,
 
   local stepEnv =
     [
