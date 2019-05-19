@@ -2,14 +2,11 @@ foo:
   bar: foobar
   baz: some other stuff
 steps:
-  - commands:
-      - uname -a
-      - echo 'Hello, World!'
-      - env
-    agents:
+  - agents:
       queue: 'dlntest-k8s'
     plugins:
       - EmbarkStudios/k8s:
-          image: alpine
+          image: embarkstudios/fortune
+          command: ["startrek"]
           git-credentials-secret-key: git-credentials
           git-ssh-secret-key: git-ssh-key
