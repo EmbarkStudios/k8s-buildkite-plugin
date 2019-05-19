@@ -140,7 +140,7 @@ Optionally mount a [host path](https://kubernetes.io/docs/concepts/storage/volum
 
 Should be used with some care, since the actual storage used is outside the control of Kubernetes itself.
 
-Example: `/var/lib/buildkite/builds``
+Example: `/var/lib/buildkite/builds`
 
 ### `build-path-pvc` (optional, string)
 
