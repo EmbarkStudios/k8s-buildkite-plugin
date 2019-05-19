@@ -1,13 +1,12 @@
 steps:
-  - agents:
-      queue: dlntest-k8s
-    commands:
-      - uname -a
-      - echo 'Hello, World!'
-      - ls -lR /foo
+  - name: Build and publish k8s-buildkite-agent container image
+    agents:
+      queue: k8s
     plugins:
-      - EmbarkStudios/k8s:
-          image: alpine
+      - EmbarkStudios/k8s#0.9.1:
+          image: gcr.io/kaniko-project/executor:debug
+          command:
+            - --context=dir://$PWD
+            - --destination=embarkstudios/k8s-buildkite-agent
           mount-secret:
-            - dlntest:/foo/bar
-            - dlntest2:/foo/baz
+            - docker-hub-credentials:/kaniko/.docker

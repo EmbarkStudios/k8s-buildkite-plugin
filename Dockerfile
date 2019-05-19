@@ -3,6 +3,7 @@ FROM buildkite/agent:3.11.5 AS buildkite
 FROM mexisme/jsonnet:alpine AS jsonnet
 
 FROM alpine
+COPY entrypoint.sh /entrypoint.sh
 
 RUN apk add --no-cache bash coreutils curl git jq libstdc++ openssh
 
@@ -13,7 +14,5 @@ RUN curl -sfL https://storage.googleapis.com/kubernetes-release/release/${K8S_VE
 COPY --from=buildkite /usr/local/bin/buildkite-agent /usr/local/bin/buildkite-agent
 
 COPY --from=jsonnet /jsonnet /usr/local/bin/jsonnet
-
-COPY entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT [ "/entrypoint.sh"]
