@@ -12,6 +12,7 @@ local allowedEnvs = std.set(
     'BUILDKITE_BUILD_PATH',
     'BUILDKITE_BUILD_URL',
     'BUILDKITE_TAG',
+    'BUILDKITE_TIMEOUT',
     'BUILDKITE_AGENT_NAME',
     'BUILDKITE_ORGANIZATION_SLUG',
     'BUILDKITE_PIPELINE_SLUG',
@@ -30,6 +31,7 @@ local identity = function(f) f;
 
 function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
   local env = {
+    BUILDKITE_TIMEOUT: '10',
     BUILDKITE_PLUGIN_K8S_SECRET_NAME: 'buildkite',
     BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_KEY: '',
     BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_NAME: '',
@@ -199,6 +201,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
   },
   spec: {
     backoffLimit: 0,
+    activeDeadlineSeconds: std.parseInt(env.BUILDKITE_TIMEOUT) * 60,
     completions: 1,
     template: {
       metadata: {
