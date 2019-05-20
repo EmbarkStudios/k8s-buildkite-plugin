@@ -22,10 +22,17 @@ function tail_logs {
 
 echo "--- :kubernetes: Starting Kubernetes Job ($(kubectl config current-context))"
 
+patchFunc="identity"
+if [[ -n "${BUILDKITE_PLUGIN_K8S_PATCH}" ]]; then
+  patchFunc=${BUILDKITE_PLUGIN_K8S_PATCH}
+fi
+export patchFunc
+
 jsonnet \
   --tla-str "jobName=${job_name}" \
   --tla-str-file "stepEnvFile=${BUILDKITE_ENV_FILE}" \
   --tla-code "agentEnv=$(jq -c -n env)" \
+  --tla-code patchFunc \
   "${basedir}/lib/job.jsonnet" \
   | kubectl apply -f -
 

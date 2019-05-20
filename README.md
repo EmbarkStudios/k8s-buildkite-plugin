@@ -150,6 +150,21 @@ Optionally mount an existing [Persistent Volume Claim](https://kubernetes.io/doc
 
 Override the working directory to run the command in, inside the container. The default is the build directory where the buildkite bootstrap and git checkout runs.
 
+### `patch` (optional, string)
+
+(Advanced / hack use). Provide a [jsonnet](https://jsonnet.org/) function to transform the resulting job manifest.
+
+Example:
+```
+function(job) job {
+  metadata: {
+    labels: job.metadata.labels {
+      foo: 'some extra label value',
+    },
+  },
+}
+```
+
 ## License
 
 Apache 2.0 (see [LICENSE](LICENSE))

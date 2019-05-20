@@ -43,6 +43,8 @@ configuration:
       type: string
     workdir:
       type: string
+    patch:
+      type: string
   required:
   - image
   additionalProperties: false

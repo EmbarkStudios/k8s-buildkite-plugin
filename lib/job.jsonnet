@@ -26,7 +26,9 @@ local allowedEnvs = std.set(
   ]
 );
 
-function(jobName, agentEnv={}, stepEnvFile='') {
+local identity = function(f) f;
+
+function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
   local env = {
     BUILDKITE_PLUGIN_K8S_SECRET_NAME: 'buildkite',
     BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_KEY: '',
@@ -236,4 +238,4 @@ function(jobName, agentEnv={}, stepEnvFile='') {
       },
     },
   },
-}
+})
