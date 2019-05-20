@@ -41,7 +41,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_HOST_PATH: '',
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_PVC: '',
     BUILDKITE_PLUGIN_K8S_MOUNT_SECRET: '',
-    BUILDKITE_PLUGIN_K8S_PRIVILEGED: false,
+    BUILDKITE_PLUGIN_K8S_PRIVILEGED: 'false',
     BUILDKITE_PLUGIN_K8S_WORKDIR: std.join('/', [
       env.BUILDKITE_BUILD_PATH,
       env.BUILDKITE_AGENT_NAME,
@@ -226,7 +226,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
             env: podEnv,
             envFrom: secretEnv,
             securityContext: {
-              privileged: env.BUILDKITE_PLUGIN_K8S_PRIVILEGED,
+              privileged: std.asciiLower(env.BUILDKITE_PLUGIN_K8S_PRIVILEGED) == 'true',
             },
             volumeMounts: [{ mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' }] + secretMount.mount,
             workingDir: env.BUILDKITE_PLUGIN_K8S_WORKDIR,
