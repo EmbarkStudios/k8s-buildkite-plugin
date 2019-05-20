@@ -11,6 +11,7 @@ steps:
             - --context=dir://$PWD
             - --reproducible
             - --cache=true
+            - --cache-repo=kaniko-cache.buildkite.svc.cluster.local/kaniko/cache
             - --cache-dir=$BUILDKITE_BUILD_PATH/_kaniko_cache
           mount-secret:
             - docker-hub-credentials:/kaniko/.docker
