@@ -192,6 +192,8 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
       args: [env[f] for f in std.objectFields(env) if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_COMMAND_')],
     },
 
+  local deadline = std.parseInt(env.BUILDKITE_TIMEOUT) * 60,
+
   apiVersion: 'batch/v1',
   kind: 'Job',
   metadata: {
@@ -201,7 +203,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
   },
   spec: {
     backoffLimit: 0,
-    activeDeadlineSeconds: std.parseInt(env.BUILDKITE_TIMEOUT) * 60,
+    activeDeadlineSeconds: deadline,
     completions: 1,
     template: {
       metadata: {
@@ -209,6 +211,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
         annotations: annotations,
       },
       spec: {
+        activeDeadlineSeconds: deadline,
         restartPolicy: 'Never',
         initContainers: [
           {

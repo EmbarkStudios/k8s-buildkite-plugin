@@ -6,14 +6,15 @@ basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 
 job_name="${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}-${BUILDKITE_JOB_ID}"
 
-timeout=600
-if [[ -n "${BUILDKITE_TIMEOUT}" ]]; then
-  ((timeout=BUILDKITE_TIMEOUT*60))
+if [[ ${BUILDKITE_TIMEOUT:-"false"} == "false" ]]; then
+  BUILDKITE_TIMEOUT=600
 fi
+((timeout=BUILDKITE_TIMEOUT*60))
+export BUILDKITE_TIMEOUT
 
 function cleanup {
   # Delete all jobs older than a day
-  kubectl delete job $(kubectl get job -l buildkite/plugin=k8s | awk 'match($5,/[0-9]+d/) {print $1}') 2>/dev/null || true
+  kubectl delete job "$(kubectl get job -l buildkite/plugin=k8s | awk 'match($5,/[0-9]+d/) {print $1}')" 2>/dev/null || true
 }
 trap cleanup EXIT
 
