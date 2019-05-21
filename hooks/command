@@ -26,7 +26,7 @@ function tail_logs {
   done
 }
 
-echo "--- :kubernetes: Starting Kubernetes Job ($(kubectl config current-context))"
+echo "--- :kubernetes: Starting Kubernetes Job"
 
 export patchFunc=${BUILDKITE_PLUGIN_K8S_PATCH:-"function(f) f"}
 
