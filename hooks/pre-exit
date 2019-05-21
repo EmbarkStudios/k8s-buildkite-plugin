@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -euo pipefail
+
+job_name="${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}-${BUILDKITE_JOB_ID}"
+
+echo "--- :kubernetes: Cleanup"
+
+pod=$(kubectl get pod --output=name -l "job-name=${job_name}")
+if [[ -n "${pod}" ]] ; then
+  kubectl patch --patch '{"spec":{"activeDeadlineSeconds":1}}' "${pod}"
+fi
+
+kubectl patch --patch '{"spec":{"activeDeadlineSeconds":1}}' "job/${job_name}"
+
