@@ -28,11 +28,7 @@ function tail_logs {
 
 echo "--- :kubernetes: Starting Kubernetes Job ($(kubectl config current-context))"
 
-patchFunc="identity"
-if [[ -n "${BUILDKITE_PLUGIN_K8S_PATCH}" ]]; then
-  patchFunc=${BUILDKITE_PLUGIN_K8S_PATCH}
-fi
-export patchFunc
+export patchFunc=${BUILDKITE_PLUGIN_K8S_PATCH:-"function(f) f"}
 
 jsonnet \
   --tla-str "jobName=${job_name}" \
