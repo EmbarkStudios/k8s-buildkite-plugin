@@ -14,6 +14,8 @@ The build step container will have the `buildkite-agent` binary mounted at `/usr
 
 This behavior may be disabled by setting `mount-buildkite-agent: false` in the pipeline.
 
+> ** Note: ** The user is responsible for making sure the container specified in `image` contains any external dependencies required by the otherwise statically linked buildkite-agent binary. This includes certificate authorities, and possibly git and ssh depending on how it's being used.
+
 ### Build artifacts
 
 As the build-agent doesn't run in the same container as the actual commands, automatic upload of artifacts specified in `artifact_paths` won't work.
