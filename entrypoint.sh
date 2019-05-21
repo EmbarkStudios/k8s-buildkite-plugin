@@ -8,4 +8,8 @@ if [[ -f /secrets/ssh-key ]]; then
   ssh-add -k /secrets/ssh-key
 fi
 
+if [[ -d /local ]]; then
+  cp /usr/local/bin/buildkite-agent /local/
+fi
+
 /usr/local/bin/buildkite-agent "$@"

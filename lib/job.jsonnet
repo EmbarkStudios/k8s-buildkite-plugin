@@ -38,11 +38,12 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_KEY: '',
     BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_NAME: '',
     BUILDKITE_PLUGIN_K8S_AGENT_TOKEN_SECRET_KEY: 'buildkite-agent-token',
-    BUILDKITE_PLUGIN_K8S_INIT_IMAGE: 'embarkstudios/k8s-buildkite-agent@sha256:0792a9e3d9a77193692ef82f2ba1ee53a8c064b3259c6d4b7d5b1f44defad97b',
+    BUILDKITE_PLUGIN_K8S_INIT_IMAGE: 'embarkstudios/k8s-buildkite-agent@sha256:2924dc28a3b98c87fd01cf86bf03d787357016f962311ecef400a48879f646b5',
     BUILDKITE_PLUGIN_K8S_ALWAYS_PULL: false,
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_HOST_PATH: '',
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_PVC: '',
     BUILDKITE_PLUGIN_K8S_MOUNT_SECRET: '',
+    BUILDKITE_PLUGIN_K8S_MOUNT_BUILDKITE_AGENT: 'true',
     BUILDKITE_PLUGIN_K8S_PRIVILEGED: 'false',
     BUILDKITE_PLUGIN_K8S_WORKDIR: std.join('/', [
       env.BUILDKITE_BUILD_PATH,
@@ -183,6 +184,15 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     ],
   },
 
+  local agentMount =
+    if env.BUILDKITE_PLUGIN_K8S_MOUNT_BUILDKITE_AGENT == 'false'
+    then []
+    else [{
+      name: 'buildkite-agent',
+      mountPath: '/usr/local/bin/buildkite-agent',
+      subPath: 'buildkite-agent',
+    }],
+
   local commandArgs =
     if env.BUILDKITE_COMMAND != '' then {
       command: ['/bin/sh', '-c'],
@@ -221,6 +231,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
             env: podEnv,
             volumeMounts: [
               { mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' },
+              { mountPath: '/local', name: 'buildkite-agent' },
             ] + gitCredentials.mount + gitSSH.mount,
           },
         ],
@@ -234,12 +245,13 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
             securityContext: {
               privileged: std.asciiLower(env.BUILDKITE_PLUGIN_K8S_PRIVILEGED) == 'true',
             },
-            volumeMounts: [{ mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' }] + secretMount.mount,
+            volumeMounts: [{ mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' }] + secretMount.mount + agentMount,
             workingDir: env.BUILDKITE_PLUGIN_K8S_WORKDIR,
           } + commandArgs,
         ],
         volumes: [
           { name: 'build' } + buildVolume,
+          { name: 'buildkite-agent', emptyDir: {} },
         ] + gitCredentials.volume + gitSSH.volume + secretMount.volume,
       },
     },

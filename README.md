@@ -6,6 +6,20 @@ An opinionated [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) f
 
 The plugin tries to stay reasonably compatible with the [Docker plugin](https://github.com/buildkite-plugins/docker-buildkite-plugin) to make it easy to change pipelines to run on a cluster. It also takes lots of inspiration from the [kustomize-job-buildkite-plugin](https://github.com/MYOB-Technology/kustomize-job-buildkite-plugin).
 
+## Quirks & Issues
+
+Since the step isn't actually performed by the build-agent itself, but in a separately scheduled (and isolated) container, a few things don't work as on a "normal" build-agent.
+
+The build step container will have the `buildkite-agent` binary mounted at `/usr/local/bin/buildkite-agent` to allow using the agent subcommands for annotations, metadata and artifacts directly.
+
+This behavior may be disabled by setting `mount-buildkite-agent: false` in the pipeline.
+
+### Build artifacts
+
+As the build-agent doesn't run in the same container as the actual commands, automatic upload of artifacts specified in `artifact_paths` won't work.
+A workaround to this is to run `buildkite-agent artifact upload ...` as a command in the step itself.
+
+
 ## Example
 
 ```yaml
