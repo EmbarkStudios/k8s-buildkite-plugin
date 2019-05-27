@@ -5,11 +5,9 @@ steps:
       os: linux
     command:
       - echo "Running shellcheck"
-      - pwd
-      - find
       - shellcheck hooks/*
     plugins:
-      - EmbarkStudios/k8s#68abf7faf1c35f903208d275a0152d77dd2bed84:
+      - EmbarkStudios/k8s#1.0.1:
           image: koalaman/shellcheck-alpine
   - wait
   - name: Build and publish k8s-buildkite-agent container image
@@ -17,7 +15,7 @@ steps:
       queue: default
       os: linux
     plugins:
-      - EmbarkStudios/k8s#68abf7faf1c35f903208d275a0152d77dd2bed84:
+      - EmbarkStudios/k8s#1.0.1:
           image: gcr.io/kaniko-project/executor:latest
           command:
             - --destination=embarkstudios/k8s-buildkite-agent
