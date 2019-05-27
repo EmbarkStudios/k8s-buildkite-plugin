@@ -12,4 +12,4 @@ if [[ -d /local ]]; then
   cp /usr/local/bin/buildkite-agent /local/
 fi
 
-/usr/local/bin/buildkite-agent "$@"
+exec /usr/local/bin/buildkite-agent "$@"
