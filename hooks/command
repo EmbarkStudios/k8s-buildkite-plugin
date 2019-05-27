@@ -4,7 +4,7 @@ set -euo pipefail
 
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 
-job_name="${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}-${BUILDKITE_JOB_ID}"
+job_name="${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}"
 
 if [[ ${BUILDKITE_TIMEOUT:-"false"} == "false" ]]; then
   BUILDKITE_TIMEOUT=600
