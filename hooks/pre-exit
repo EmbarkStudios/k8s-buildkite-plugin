@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-job_name="${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}-$(head -c 5 /dev/urandom | base32 | tr '[:upper:]' '[:lower:]')"
+job_name="$(cat /tmp/job_name)"
 
 echo "--- :kubernetes: Cleanup"
 
