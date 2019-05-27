@@ -118,6 +118,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     'build/source': env.BUILDKITE_SOURCE,
     'buildkite/agent-id': env.BUILDKITE_AGENT_ID,
     'buildkite/agent-name': env.BUILDKITE_AGENT_NAME,
+    'buildkite/job-id': env.BUILDKITE_JOB_ID,
     'job-name': jobName,
   },
 
