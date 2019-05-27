@@ -5,7 +5,9 @@ steps:
       os: linux
     command:
       - echo "Running shellcheck"
-      - "shellcheck hooks/*"
+      - pwd
+      - find
+      - shellcheck hooks/*
     plugins:
       - EmbarkStudios/k8s#68abf7faf1c35f903208d275a0152d77dd2bed84:
           image: koalaman/shellcheck-alpine
