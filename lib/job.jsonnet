@@ -30,6 +30,12 @@ local allowedEnvs = std.set(
 local identity = function(f) f;
 
 function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
+  local buildSubPath = std.join('/', [
+    env.BUILDKITE_AGENT_NAME,
+    env.BUILDKITE_ORGANIZATION_SLUG,
+    env.BUILDKITE_PIPELINE_SLUG,
+  ]),
+
   local env = {
     BUILDKITE_TIMEOUT: '10',
     BUILDKITE_PLUGIN_K8S_SECRET_NAME: 'buildkite',
@@ -45,12 +51,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     BUILDKITE_PLUGIN_K8S_MOUNT_SECRET: '',
     BUILDKITE_PLUGIN_K8S_MOUNT_BUILDKITE_AGENT: 'true',
     BUILDKITE_PLUGIN_K8S_PRIVILEGED: 'false',
-    BUILDKITE_PLUGIN_K8S_WORKDIR: std.join('/', [
-      env.BUILDKITE_BUILD_PATH,
-      env.BUILDKITE_AGENT_NAME,
-      env.BUILDKITE_ORGANIZATION_SLUG,
-      env.BUILDKITE_PIPELINE_SLUG,
-    ]),
+    BUILDKITE_PLUGIN_K8S_WORKDIR: std.join('/', [env.BUILDKITE_BUILD_PATH, buildSubPath]),
   } + agentEnv,
 
   local stepEnv =
@@ -246,7 +247,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
             securityContext: {
               privileged: std.asciiLower(env.BUILDKITE_PLUGIN_K8S_PRIVILEGED) == 'true',
             },
-            volumeMounts: [{ mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' }] + secretMount.mount + agentMount,
+            volumeMounts: [{ mountPath: env.BUILDKITE_PLUGIN_K8S_WORKDIR, name: 'build', subPath: buildSubPath }] + secretMount.mount + agentMount,
             workingDir: env.BUILDKITE_PLUGIN_K8S_WORKDIR,
           } + commandArgs,
         ],
