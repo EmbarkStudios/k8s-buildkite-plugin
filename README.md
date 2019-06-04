@@ -143,6 +143,13 @@ The name of the secret containing the git credentials used for checking out sour
 
 The key of the secret value containing the SSH key used when checking out source code with SSH as transport.
 
+### `mount-hostpath` (optional, string or array)
+
+Mount a host path as a directory inside the container. Must be in the form of `/host/path:/some/mount/path`.
+Multiple host paths may be mounted by specifying a list of host/mount pairs.
+
+Example: `my-secret:/my/secret`
+
 ### `mount-secret` (optional, string or array)
 
 Mount a secret as a directory inside the container. Must be in the form of `secretName:/some/mount/path`.

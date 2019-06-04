@@ -21,6 +21,8 @@ configuration:
       type: [string, array]
     init-image:
       type: string
+    mount-hostpath:
+      type: [string, array]
     mount-secret:
       type: [string, array]
     privileged:

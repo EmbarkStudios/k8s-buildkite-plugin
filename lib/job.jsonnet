@@ -169,6 +169,27 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
       }],
   },
 
+  local hostPathMount = {
+    local cfg =
+      std.mapWithIndex(
+        function(i, v) ['hostpath-' + i] + v,
+        [
+          std.splitLimit(env[f], ':', 1)
+          for f in std.objectFields(env)
+          if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_MOUNT_HOSTPATH')
+             && env[f] != ''
+        ]
+      ),
+    mount: [
+      { name: c[0], mountPath: c[2] }
+      for c in cfg
+    ],
+    volume: [
+      { name: c[0], hostPath: { path: c[1], type: 'DirectoryOrCreate' } }
+      for c in cfg
+    ],
+  },
+
   local secretMount = {
     local cfg = [
       std.splitLimit(env[f], ':', 1)
@@ -247,14 +268,14 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
             securityContext: {
               privileged: std.asciiLower(env.BUILDKITE_PLUGIN_K8S_PRIVILEGED) == 'true',
             },
-            volumeMounts: [{ mountPath: env.BUILDKITE_PLUGIN_K8S_WORKDIR, name: 'build', subPath: buildSubPath }] + secretMount.mount + agentMount,
+            volumeMounts: [{ mountPath: env.BUILDKITE_PLUGIN_K8S_WORKDIR, name: 'build', subPath: buildSubPath }] + secretMount.mount + hostPathMount.mount + agentMount,
             workingDir: env.BUILDKITE_PLUGIN_K8S_WORKDIR,
           } + commandArgs,
         ],
         volumes: [
           { name: 'build' } + buildVolume,
           { name: 'buildkite-agent', emptyDir: {} },
-        ] + gitCredentials.volume + gitSSH.volume + secretMount.volume,
+        ] + gitCredentials.volume + gitSSH.volume + secretMount.volume + hostPathMount.volume,
       },
     },
   },
