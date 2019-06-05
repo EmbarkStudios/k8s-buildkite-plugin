@@ -268,8 +268,11 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
             securityContext: {
               privileged: std.asciiLower(env.BUILDKITE_PLUGIN_K8S_PRIVILEGED) == 'true',
             },
-            volumeMounts: [{ mountPath: env.BUILDKITE_PLUGIN_K8S_WORKDIR, name: 'build', subPath: buildSubPath }] + secretMount.mount + hostPathMount.mount + agentMount,
-            workingDir: env.BUILDKITE_PLUGIN_K8S_WORKDIR,
+            volumeMounts: [
+              { mountPath: env.BUILDKITE_PLUGIN_K8S_WORKDIR, name: 'build', subPath: buildSubPath },
+              { mountPath: '/build', name: 'build', subPath: buildSubPath },
+            ] + secretMount.mount + hostPathMount.mount + agentMount,
+            workingDir: '/build',
           } + commandArgs,
         ],
         volumes: [
