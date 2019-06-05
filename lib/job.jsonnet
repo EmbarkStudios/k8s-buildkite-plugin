@@ -48,6 +48,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     BUILDKITE_PLUGIN_K8S_ALWAYS_PULL: false,
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_HOST_PATH: '',
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_PVC: '',
+    BUILDKITE_PLUGIN_K8S_GIT_MIRRORS_HOST_PATH: '',
     BUILDKITE_PLUGIN_K8S_MOUNT_SECRET: '',
     BUILDKITE_PLUGIN_K8S_MOUNT_BUILDKITE_AGENT: 'true',
     BUILDKITE_PLUGIN_K8S_PRIVILEGED: 'false',
@@ -128,6 +129,12 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     then { persistentVolumeClaim: { claimName: env.BUILDKITE_PLUGIN_K8S_BUILD_PATH_PVC } }
     else if env.BUILDKITE_PLUGIN_K8S_BUILD_PATH_HOST_PATH != ''
     then { hostPath: { path: env.BUILDKITE_PLUGIN_K8S_BUILD_PATH_HOST_PATH, type: 'DirectoryOrCreate' } }
+    else { emptyDir: {} }
+  ,
+
+  local gitMirrorsVolume =
+    if env.BUILDKITE_PLUGIN_K8S_GIT_MIRRORS_HOST_PATH != ''
+    then { hostPath: { path: env.BUILDKITE_PLUGIN_K8S_GIT_MIRRORS_HOST_PATH, type: 'DirectoryOrCreate' } }
     else { emptyDir: {} }
   ,
 
@@ -254,6 +261,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
             env: podEnv,
             volumeMounts: [
               { mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' },
+              { mountPath: '/git-mirrors', name: 'git-mirrors' },
               { mountPath: '/local', name: 'buildkite-agent' },
             ] + gitCredentials.mount + gitSSH.mount,
           },
@@ -271,12 +279,14 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
             volumeMounts: [
               { mountPath: env.BUILDKITE_PLUGIN_K8S_WORKDIR, name: 'build', subPath: buildSubPath },
               { mountPath: '/build', name: 'build', subPath: buildSubPath },
+              { mountPath: '/git-mirrors', name: 'git-mirrors' },
             ] + secretMount.mount + hostPathMount.mount + agentMount,
             workingDir: '/build',
           } + commandArgs,
         ],
         volumes: [
           { name: 'build' } + buildVolume,
+          { name: 'git-mirrors' } + gitMirrorsVolume,
           { name: 'buildkite-agent', emptyDir: {} },
         ] + gitCredentials.volume + gitSSH.volume + secretMount.volume + hostPathMount.volume,
       },

@@ -43,6 +43,8 @@ configuration:
       type: string
     build-path-pvc:
       type: string
+    git-mirrors-host-path:
+      type: string
     workdir:
       type: string
     patch:

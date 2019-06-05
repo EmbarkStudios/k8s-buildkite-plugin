@@ -169,6 +169,14 @@ Example: `/var/lib/buildkite/builds`
 
 Optionally mount an existing [Persistent Volume Claim](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) used as backing storage for the build.
 
+### `git-mirrors-host-path` (optional, string)
+
+Optionally mount a [host path](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath) to be used as [git-mirrors](https://forum.buildkite.community/t/shared-git-repository-checkouts-in-the-agent/443) path. This enables multiple pipelines to share a single git repository.
+
+Should be used with some care, since the actual storage used is outside the control of Kubernetes itself.
+
+Example: `/var/lib/buildkite/builds`
+
 ### `workdir` (optional, string)
 
 Override the working directory to run the command in, inside the container. The default is the build directory where the buildkite bootstrap and git checkout runs.
