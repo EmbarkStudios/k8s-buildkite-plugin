@@ -177,6 +177,22 @@ Should be used with some care, since the actual storage used is outside the cont
 
 Example: `/var/lib/buildkite/builds`
 
+### `resources-request-cpu` (optional, string)
+
+Sets [cpu request](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) for the build container.
+
+### `resources-limit-cpu` (optional, string)
+
+Sets [cpu limit](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) for the build container.
+
+### `resources-request-memory` (optional, string)
+
+Sets [memory request](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) for the build container.
+
+### `resources-limit-memory` (optional, string)
+
+Sets [memory limit](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) for the build container.
+
 ### `workdir` (optional, string)
 
 Override the working directory to run the command in, inside the container. The default is the build directory where the buildkite bootstrap and git checkout runs.

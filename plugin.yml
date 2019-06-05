@@ -49,6 +49,14 @@ configuration:
       type: string
     patch:
       type: string
+    resources-request-cpu:
+      type: string
+    resources-limit-cpu:
+      type: string
+    resources-request-memory:
+      type: string
+    resources-limit-memory:
+      type: string
   required:
   - image
   additionalProperties: false

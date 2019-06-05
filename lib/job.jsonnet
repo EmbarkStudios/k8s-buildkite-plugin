@@ -52,6 +52,10 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     BUILDKITE_PLUGIN_K8S_MOUNT_SECRET: '',
     BUILDKITE_PLUGIN_K8S_MOUNT_BUILDKITE_AGENT: 'true',
     BUILDKITE_PLUGIN_K8S_PRIVILEGED: 'false',
+    BUILDKITE_PLUGIN_K8S_RESOURCES_REQUEST_CPU: '',
+    BUILDKITE_PLUGIN_K8S_RESOURCES_LIMIT_CPU: '',
+    BUILDKITE_PLUGIN_K8S_RESOURCES_REQUEST_MEMORY: '',
+    BUILDKITE_PLUGIN_K8S_RESOURCES_LIMIT_MEMORY: '',
     BUILDKITE_PLUGIN_K8S_WORKDIR: std.join('/', [env.BUILDKITE_BUILD_PATH, buildSubPath]),
   } + agentEnv,
 
@@ -275,6 +279,24 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
             envFrom: secretEnv,
             securityContext: {
               privileged: std.asciiLower(env.BUILDKITE_PLUGIN_K8S_PRIVILEGED) == 'true',
+            },
+            resources: {
+              requests:
+                (if env.BUILDKITE_PLUGIN_K8S_RESOURCES_REQUEST_CPU != '' then
+                   { cpu: env.BUILDKITE_PLUGIN_K8S_RESOURCES_REQUEST_CPU }
+                 else {})
+                +
+                (if env.BUILDKITE_PLUGIN_K8S_RESOURCES_REQUEST_MEMORY != '' then
+                   { memory: env.BUILDKITE_PLUGIN_K8S_RESOURCES_REQUEST_MEMORY }
+                 else {}),
+              limits:
+                (if env.BUILDKITE_PLUGIN_K8S_RESOURCES_LIMIT_CPU != '' then
+                   { cpu: env.BUILDKITE_PLUGIN_K8S_RESOURCES_LIMIT_CPU }
+                 else {})
+                +
+                (if env.BUILDKITE_PLUGIN_K8S_RESOURCES_LIMIT_MEMORY != '' then
+                   { memory: env.BUILDKITE_PLUGIN_K8S_RESOURCES_LIMIT_MEMORY }
+                 else {}),
             },
             volumeMounts: [
               { mountPath: env.BUILDKITE_PLUGIN_K8S_WORKDIR, name: 'build', subPath: buildSubPath },
