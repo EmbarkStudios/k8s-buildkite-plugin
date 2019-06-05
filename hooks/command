@@ -15,7 +15,7 @@ export BUILDKITE_TIMEOUT
 
 function cleanup {
   # Delete all jobs older than a day
-  kubectl delete job "$(kubectl get job -l buildkite/plugin=k8s | awk 'match($5,/[0-9]+d/) {print $1}')" 2>/dev/null || true
+  kubectl delete job "$(kubectl get job -l buildkite/plugin=k8s | awk 'match($4,/[0-9]+d/) {print $1}')" 2>/dev/null || true
 }
 trap cleanup EXIT
 
