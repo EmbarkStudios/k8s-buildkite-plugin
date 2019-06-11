@@ -1,6 +1,7 @@
 # Kubernetes Buildkite Plugin
 
 [![Build Status](https://badge.buildkite.com/c061bcad854e7a95c03d1baebfab8a01dc25768dab272dd8e5.svg)](https://buildkite.com/embark-studios/k8s-buildkite-plugin)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FEmbarkStudios%2Fk8s-buildkite-plugin.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FEmbarkStudios%2Fk8s-buildkite-plugin?ref=badge_shield)
 
 An opinionated [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pipeline steps as [Kubernetes Jobs](https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/) on a cluster with minimal effort.
 
@@ -215,3 +216,6 @@ function(job) job {
 ## License
 
 Apache 2.0 (see [LICENSE](LICENSE))
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FEmbarkStudios%2Fk8s-buildkite-plugin.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FEmbarkStudios%2Fk8s-buildkite-plugin?ref=badge_large)
