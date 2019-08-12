@@ -1,4 +1,4 @@
-FROM buildkite/agent:3.12.0 AS buildkite
+FROM buildkite/agent:3.13.2 AS buildkite
 
 FROM mexisme/jsonnet:alpine AS jsonnet
 
@@ -7,7 +7,7 @@ COPY entrypoint.sh /entrypoint.sh
 
 RUN apk add --no-cache bash ca-certificates coreutils curl git jq libstdc++ openssh
 
-ENV K8S_VERSION="v1.14.2"
+ENV K8S_VERSION="v1.15.2"
 RUN curl -sfL https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl && \
     chmod +x /usr/local/bin/kubectl
 
