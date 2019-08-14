@@ -203,13 +203,16 @@ Override the working directory to run the command in, inside the container. The 
 
 Example:
 ```
-function(job) job {
-  metadata: {
-    labels: job.metadata.labels {
-      foo: 'some extra label value',
+patch: |
+  function(job) job {
+    spec+: {
+      template+: {
+        spec+: {
+          tolerations: [ { key: 'foo', value: 'bar', operator: 'Equal', effect: 'NoSchedule' }, ],
+        },
+      },
     },
-  },
-}
+  }
 ```
 
 ## License
