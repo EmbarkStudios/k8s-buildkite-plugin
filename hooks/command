@@ -22,7 +22,7 @@ trap cleanup EXIT
 
 function tail_logs {
   while true ; do
-    stdbuf -o0 -e0 kubectl logs -f "job/${job_name}" 2>>/dev/null && break
+    stdbuf -o0 -e0 kubectl logs -f "job/${job_name}" 2>>/dev/null || true
     sleep 0.2
   done
 }
