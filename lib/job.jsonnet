@@ -93,7 +93,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
         name: kv[0],
         value: kv[1],
       }
-      for f in std.objectFields(env)
+      for f in std.sort(std.objectFields(env))
       if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT_')
          && !std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT_FROM_SECRET')
     ],
@@ -232,8 +232,8 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
       command: ['/bin/sh', '-c'],
       args: [env.BUILDKITE_COMMAND],
     } else {
-      command: [env[f] for f in std.objectFields(env) if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_ENTRYPOINT_')],
-      args: [env[f] for f in std.objectFields(env) if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_COMMAND_')],
+      command: [env[f] for f in std.sort(std.objectFields(env)) if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_ENTRYPOINT_')],
+      args: [env[f] for f in std.sort(std.objectFields(env)) if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_COMMAND_')],
     },
 
   local deadline = std.parseInt(env.BUILDKITE_TIMEOUT) * 60,
