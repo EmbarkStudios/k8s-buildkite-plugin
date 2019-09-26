@@ -33,6 +33,13 @@ local numberSuffix(s) =
   local t = std.split(s, '_');
   std.format('%05s', t[std.length(t) - 1]);
 
+local labelChars = std.set(std.stringChars('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.'));
+local labelValue(s) =
+  std.join('', [
+    if std.setMember(c, labelChars) then c else '_'
+    for c in std.stringChars(s)
+  ]);
+
 function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
   local buildSubPath = std.join('/', [
     env.BUILDKITE_AGENT_NAME,
@@ -110,8 +117,8 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     ],
 
   local labels = {
-    'build/branch': env.BUILDKITE_BRANCH,
-    'build/pipeline': env.BUILDKITE_PIPELINE_SLUG,
+    'build/branch': labelValue(env.BUILDKITE_BRANCH),
+    'build/pipeline': labelValue(env.BUILDKITE_PIPELINE_SLUG),
     'buildkite/plugin': 'k8s',
   },
 
