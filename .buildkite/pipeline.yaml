@@ -11,6 +11,7 @@ steps:
           image: koalaman/shellcheck-alpine
   - wait
   - name: Build and publish k8s-buildkite-agent container image
+    branches: 'master'
     agents:
       queue: default
       os: linux
