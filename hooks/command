@@ -19,12 +19,10 @@ function cleanup {
 }
 trap cleanup EXIT
 
-
 function tail_logs {
-  while true ; do
-    stdbuf -o0 -e0 kubectl logs -f "job/${job_name}" 2>>/dev/null || true
-    sleep 0.2
-  done
+  # logs will be failing until they're available for streaming, once available we actually start streaming them.
+  while ! kubectl logs --tail 0 --limit-bytes 1 "job/${job_name}" > /dev/null 2>&1; do sleep 0.2; done
+  kubectl logs --follow "job/${job_name}"
 }
 
 echo "--- :kubernetes: Starting Kubernetes Job"
