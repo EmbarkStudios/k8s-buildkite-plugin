@@ -22,7 +22,9 @@ trap cleanup EXIT
 function tail_logs {
   # logs will be failing until they're available for streaming, once available we actually start streaming them.
   while ! kubectl logs --tail 0 --limit-bytes 1 "job/${job_name}" > /dev/null 2>&1; do sleep 0.2; done
-  kubectl logs --follow "job/${job_name}"
+
+  # It can fail even after we get the first result, so run it in loop (potentially allowing log to be displayed multple times, but chance is low).
+  while ! kubectl logs --follow "job/${job_name}"; do sleep 0.2; done
 }
 
 echo "--- :kubernetes: Starting Kubernetes Job"
