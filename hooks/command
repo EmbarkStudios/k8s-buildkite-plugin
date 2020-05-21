@@ -20,11 +20,12 @@ function cleanup {
 trap cleanup EXIT
 
 function tail_logs {
-  # logs will be failing until they're available for streaming, once available we actually start streaming them.
-  while ! kubectl logs --tail 0 --limit-bytes 1 "job/${job_name}" > /dev/null 2>&1; do sleep 0.2; done
+  # logs will be failing until they're available for streaming, once available — we actually start attempting to stream them.
+  while ! kubectl logs --tail 0 --limit-bytes 32 "job/${job_name}" > /dev/null 2>&1; do sleep 0.2; done
 
-  # It can fail even after we get the first result, so run it in loop (potentially allowing log to be displayed multiple times, but chance is low).
-  # Example of a failure: "Error from server (BadRequest): container "step" in pod "somepod" is waiting to start: PodInitializing"
+  # Run kubectl logs --follow in a loop since it can still fail:
+  #   1) It can fail due to pod not being initialized yet: "Error from server (BadRequest): container "step" in pod "somepod" is waiting to start: PodInitializing"
+  #   2) It can fail mid-streaming, in this case we unfortunately will display logs multiple times (partially).
   while ! kubectl logs --follow "job/${job_name}" 2>/dev/null; do sleep 0.2; done
 }
 
