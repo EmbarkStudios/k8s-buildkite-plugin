@@ -13,19 +13,33 @@ fi
 ((timeout=BUILDKITE_TIMEOUT*60))
 export BUILDKITE_TIMEOUT
 
+readonly job_logs_snapshot_file="$(mktemp)"
+
 function cleanup {
   # Delete all jobs older than a day
   kubectl delete job "$(kubectl get job -l buildkite/plugin=k8s | awk 'match($4,/[0-9]+d/) {print $1}')" 2>/dev/null || true
+  rm -f "$job_logs_snapshot_file"
 }
 trap cleanup EXIT
 
 function tail_logs {
   # logs will be failing until they're available for streaming, once available — we actually start attempting to stream them.
-  while ! timeout 5 kubectl logs --limit-bytes 32 "job/${job_name}"  > /dev/null 2>&1; do sleep 0.2; done
+  while ! timeout 5 kubectl logs --limit-bytes 1024 "job/${job_name}" > "$job_logs_snapshot_file" 2>/dev/null;
+  do
+    # If output is not empty we should start attempting to stream the logs.
+    # Without this check streaming can end up not getting any result (probably due to some race in k8s).
+    # Keep looping otherwise since empty output means that there is no useful log to display so we're not losing information.
+    if [[ -n "$(cat "$job_logs_snapshot_file")" ]]; then
+      break
+    else
+      sleep 0.2
+    fi
+  done
 
-  # Run kubectl logs --follow in a loop since it can still fail:
+  # Run kubectl logs --follow in a loop since it can fail:
   #   1) It can fail due to pod not being initialized yet: "Error from server (BadRequest): container "step" in pod "somepod" is waiting to start: PodInitializing"
   #   2) It can fail mid-streaming, in this case we unfortunately will display logs multiple times (partially).
+  #   3) It can hang not getting any result, but that's why we check for contents in a loop above.
   while ! kubectl logs --follow "job/${job_name}" 2>/dev/null; do sleep 0.2; done
 }
 
