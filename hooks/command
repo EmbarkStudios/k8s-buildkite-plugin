@@ -32,7 +32,8 @@ function tail_logs {
       echo "[debug] Got non-empty log content: $(cat "$job_logs_snapshot_file")"
       break
     fi
-    sleep 0.2
+    echo "[debug] Sleeping again"
+    sleep 1
   done
 
   # Run kubectl logs --follow in a loop since it can fail:
