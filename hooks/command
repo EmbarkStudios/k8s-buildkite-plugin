@@ -29,6 +29,7 @@ function tail_logs {
   do
     timeout 5 kubectl logs --limit-bytes 1024 "job/${job_name}" > "$job_logs_snapshot_file" 2>/dev/null
     if [[ -n "$(cat "$job_logs_snapshot_file")" ]]; then
+      echo "[debug] Got non-empty log content: $(cat "$job_logs_snapshot_file")"
       break
     fi
     sleep 0.2
