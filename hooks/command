@@ -30,6 +30,7 @@ function tail_logs {
     # Without this check streaming can end up not getting any result (probably due to some race in k8s).
     # Keep looping otherwise since empty output means that there is no useful log to display so we're not losing information.
     if [[ -n "$(cat "$job_logs_snapshot_file")" ]]; then
+      echo "[debug] Got logs snapshot, attempting to stream the logs now..."
       break
     else
       sleep 0.2
