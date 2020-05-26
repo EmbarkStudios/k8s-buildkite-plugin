@@ -23,11 +23,11 @@ function cleanup {
 trap cleanup EXIT
 
 function tail_logs {
+  local log_snapshot=""
   # Once logs are not empty we should start attempting to stream them.
   # Keep looping otherwise since empty output means that there is no useful log to display so we're not losing information by looping.
   while true;
   do
-    local log_snapshot
     set +e
     log_snapshot="$(timeout 5 kubectl logs --limit-bytes 1024 "job/${job_name}" 2>/dev/null)"
     set -e
@@ -75,7 +75,6 @@ while [[ -z "$jobstatus" ]] ; do
   fi
 done
 
-echo
 echo "--- :kubernetes: Job status: $jobstatus"
 
 # Wait for logs to be printed because printing runs in a fork and we're racing with it.
