@@ -13,12 +13,12 @@ fi
 ((timeout=BUILDKITE_TIMEOUT*60))
 export BUILDKITE_TIMEOUT
 
-readonly job_logs_snapshot_file="$(mktemp)"
+readonly job_log_complete_marker_file="$(mktemp)"
 
 function cleanup {
   # Delete all jobs older than a day
   kubectl delete job "$(kubectl get job -l buildkite/plugin=k8s | awk 'match($4,/[0-9]+d/) {print $1}')" 2>/dev/null || true
-  rm -f "$job_logs_snapshot_file"
+  rm -f "$job_log_complete_marker_file"
 }
 trap cleanup EXIT
 
@@ -27,16 +27,13 @@ function tail_logs {
   # Keep looping otherwise since empty output means that there is no useful log to display so we're not losing information by looping.
   while true;
   do
-    echo "[debug] checking logs snapshots"
     local log_snapshot
     set +e
-    log_snapshot="$(kubectl logs --limit-bytes 1024 "job/${job_name}" 2>/dev/null)"
+    log_snapshot="$(timeout 5 kubectl logs --limit-bytes 1024 "job/${job_name}" 2>/dev/null)"
     set -e
     if [[ -n "$log_snapshot" ]]; then
-      echo -e "[debug] Got non-empty log content: $log_snapshot)"
       break
     fi
-    echo "[debug] Sleeping again"
     sleep 0.2
   done
 
@@ -45,6 +42,8 @@ function tail_logs {
   #   2) It can fail mid-streaming, in this case we unfortunately will display logs multiple times (partially).
   #   3) It can hang not providing any result, that's why we check not only exit code but also contents in the loop above.
   while ! kubectl logs --follow "job/${job_name}" 2>/dev/null; do sleep 0.2; done
+
+  echo "0" > "$job_log_complete_marker_file"
 }
 
 echo "--- :kubernetes: Starting Kubernetes Job"
@@ -78,6 +77,14 @@ done
 
 echo
 echo "--- :kubernetes: Job status: $jobstatus"
+
+# Wait for logs to be printed because printing runs in a fork and we're racing with it.
+readonly log_wait_start_time="$SECONDS"
+while [[ "$(cat "$job_log_complete_marker_file")" != "0" ]] && [[ "$((SECONDS - log_wait_start_time))" -lt 15 ]]
+do
+  sleep 0.5
+done
+
 status=1
 if [[ "$jobstatus" == "Complete" ]] ; then
   echo "success"
