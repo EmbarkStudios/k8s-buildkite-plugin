@@ -28,13 +28,13 @@ function tail_logs {
   while true;
   do
     echo "[debug] checking logs snapshots"
-    timeout 5 kubectl logs --limit-bytes 1024 "job/${job_name}" > "$job_logs_snapshot_file" 2>/dev/null
+    kubectl logs --tail --limit-bytes 1024 "job/${job_name}" > "$job_logs_snapshot_file" 2>/dev/null
     if [[ -n "$(cat "$job_logs_snapshot_file")" ]]; then
       echo "[debug] Got non-empty log content: $(cat "$job_logs_snapshot_file")"
       break
     fi
     echo "[debug] Sleeping again"
-    sleep 1
+    sleep 0.2
   done
 
   # Run kubectl logs --follow in a loop since it can fail:
