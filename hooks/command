@@ -23,14 +23,16 @@ function cleanup {
 trap cleanup EXIT
 
 function tail_logs {
+  set -x
   # Once logs are not empty we should start attempting to stream them.
   # Keep looping otherwise since empty output means that there is no useful log to display so we're not losing information by looping.
   while true;
   do
     echo "[debug] checking logs snapshots"
-    kubectl logs --tail --limit-bytes 1024 "job/${job_name}" > "$job_logs_snapshot_file" 2>/dev/null
-    if [[ -n "$(cat "$job_logs_snapshot_file")" ]]; then
-      echo "[debug] Got non-empty log content: $(cat "$job_logs_snapshot_file")"
+    local log_snapshot
+    log_snapshot="$(timeout 5 kubectl logs --limit-bytes 1024 "job/${job_name}" 2>/dev/null)"
+    if [[ -n "$log_snapshot" ]]; then
+      echo -e "[debug] Got non-empty log content: $log_snapshot)"
       break
     fi
     echo "[debug] Sleeping again"
