@@ -30,7 +30,9 @@ function tail_logs {
   do
     echo "[debug] checking logs snapshots"
     local log_snapshot
-    log_snapshot="$(timeout 5 kubectl logs --limit-bytes 1024 "job/${job_name}" 2>/dev/null)"
+    set +e
+    log_snapshot="$(kubectl logs --limit-bytes 1024 "job/${job_name}" 2>/dev/null)"
+    set -e
     if [[ -n "$log_snapshot" ]]; then
       echo -e "[debug] Got non-empty log content: $log_snapshot)"
       break
