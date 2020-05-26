@@ -23,7 +23,6 @@ function cleanup {
 trap cleanup EXIT
 
 function tail_logs {
-  set -x
   # Once logs are not empty we should start attempting to stream them.
   # Keep looping otherwise since empty output means that there is no useful log to display so we're not losing information by looping.
   while true;
