@@ -260,7 +260,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     backoffLimit: 0,
     activeDeadlineSeconds: deadline,
     completions: 1,
-    ttlSecondsAfterFinished: 86400,
+    ttlSecondsAfterFinished: 3600,
     template: {
       metadata: {
         labels: labels,
