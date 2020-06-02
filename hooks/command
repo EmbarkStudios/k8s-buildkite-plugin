@@ -17,36 +17,11 @@ readonly job_apply_loop_interval_seconds="${K8S_PLUGIN_JOB_APPLY_LOOP_INTERVAL:-
 readonly job_apply_loop_timeout_seconds="${K8S_PLUGIN_JOB_APPLY_LOOP_TIMEOUT:-120}"
 readonly log_loop_interval_seconds="${K8S_PLUGIN_LOG_LOOP_INTERVAL:-3}"
 readonly job_status_loop_sleep_interval="${K8S_PLUGIN_JOB_STATUS_LOOP_INTERVAL:-5}"
-readonly cleanup_old_jobs_loop_interval_seconds="${K8S_PLUGIN_CLEANUP_OLD_JOBS_LOOP_INTERVAL:-5}"
-readonly cleanup_old_jobs_loop_timeout_seconds="${K8S_PLUGIN_CLEANUP_OLD_JOBS_LOOP_INTERVAL:-2}"
 
 readonly job_json="$(mktemp)"
 readonly job_log_complete_marker_file="$(mktemp)"
 
 function cleanup {
-  # Delete all jobs older than a day
-  local -r cleanup_start_time="$SECONDS"
-  local cleanup_old_jobs_exit_code=""
-
-  while [[ "$((SECONDS - cleanup_start_time))" -lt "$cleanup_old_jobs_loop_timeout_seconds" ]]
-  do
-    set +e
-    local old_jobs="$(kubectl get job -l buildkite/plugin=k8s | awk 'match($4,/[0-9]+d/) {print $1}')"
-    if [[ -n "$old_jobs" ]]; then
-      kubectl delete job "$old_jobs"
-    fi
-    cleanup_old_jobs_exit_code="$?"
-    set -e
-
-    if [[ "$cleanup_old_jobs_exit_code" == "0" ]]; then
-      break
-    else
-      echo "Attempt to cleanup old jobs failed, exit code '$cleanup_old_jobs_exit_code'"
-      sleep "$cleanup_old_jobs_loop_interval_seconds"
-    fi
-  done
-
-  echo "Cleanup old jobs exit code '$cleanup_old_jobs_exit_code'"
   rm -f "$job_json" "$job_log_complete_marker_file"
 }
 trap cleanup EXIT
