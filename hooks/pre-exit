@@ -6,10 +6,28 @@ job_name="$(cat /tmp/job_name)"
 
 echo "--- :kubernetes: Cleanup"
 
-pod=$(kubectl get pod --output=name -l "job-name=${job_name}")
-if [[ -n "${pod}" ]] ; then
-  kubectl patch --patch '{"spec":{"activeDeadlineSeconds":1}}' "${pod}"
-fi
+readonly job_cleanup_loop_interval_seconds="${K8S_PLUGIN_JOB_CLEANUP_LOOP_INTERVAL:-5}"
+readonly job_cleanup_loop_timeout_seconds="${K8S_PLUGIN_JOB_CLEANUP_LOOP_TIMEOUT:-60}"
+readonly job_cleanup_start_time="$SECONDS"
 
-kubectl patch --patch '{"spec":{"activeDeadlineSeconds":1}}' "job/${job_name}"
+job_cleanup_exit_code=""
+while [[ "$((SECONDS - job_cleanup_start_time))" -lt "$job_cleanup_loop_timeout_seconds" ]]
+do
+  set +e
+  pod=$(kubectl get pod --output=name -l "job-name=${job_name}")
+  if [[ -n "${pod}" ]] ; then
+    kubectl patch --patch '{"spec":{"activeDeadlineSeconds":1}}' "${pod}"
+  fi
+  kubectl patch --patch '{"spec":{"activeDeadlineSeconds":1}}' "job/${job_name}"
+  job_cleanup_exit_code="$?"
+  set -e
 
+  if [[ "$job_cleanup_exit_code" == "0" ]]; then
+    break
+  else
+    echo "Attempt to cleanup the job failed, exit code '$job_cleanup_exit_code'"
+    sleep "$job_cleanup_loop_interval_seconds"
+  fi
+done
+
+echo "Job cleanup exit code '$job_cleanup_exit_code'"

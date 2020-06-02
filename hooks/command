@@ -13,11 +13,12 @@ fi
 ((timeout=BUILDKITE_TIMEOUT*60))
 export BUILDKITE_TIMEOUT
 
-readonly job_apply_loop_interval_seconds="${K8S_BUILDKITE_PLUGIN_JOB_APPLY_LOOP_INTERVAL:-5}"
-readonly job_apply_loop_timeout_seconds="${K8S_BUILDKITE_PLUGIN_JOB_APPLY_LOOP_TIMEOUT:-120}"
-readonly log_loop_interval_seconds="${K8S_BUILDKITE_PLUGIN_LOG_LOOP_INTERVAL:-3}"
-readonly cleanup_loop_interval_seconds="${K8S_BUILDKITE_PLUGIN_CLEANUP_LOOP_INTERVAL:-5}"
-readonly cleanup_loop_timeout_seconds="${K8S_BUILDKITE_PLUGIN_CLEANUP_LOOP_INTERVAL:-60}"
+readonly job_apply_loop_interval_seconds="${K8S_PLUGIN_JOB_APPLY_LOOP_INTERVAL:-5}"
+readonly job_apply_loop_timeout_seconds="${K8S_PLUGIN_JOB_APPLY_LOOP_TIMEOUT:-120}"
+readonly log_loop_interval_seconds="${K8S_PLUGIN_LOG_LOOP_INTERVAL:-3}"
+readonly job_status_loop_sleep_interval="${K8S_PLUGIN_JOB_STATUS_LOOP_INTERVAL:-5}"
+readonly cleanup_old_jobs_loop_interval_seconds="${K8S_PLUGIN_CLEANUP_OLD_JOBS_LOOP_INTERVAL:-5}"
+readonly cleanup_old_jobs_loop_timeout_seconds="${K8S_PLUGIN_CLEANUP_OLD_JOBS_LOOP_INTERVAL:-2}"
 
 readonly job_json="$(mktemp)"
 readonly job_log_complete_marker_file="$(mktemp)"
@@ -27,7 +28,7 @@ function cleanup {
   local -r cleanup_start_time="$SECONDS"
   local cleanup_old_jobs_exit_code=""
 
-  while [[ "$((SECONDS - cleanup_start_time))" -lt "$cleanup_loop_timeout_seconds" ]]
+  while [[ "$((SECONDS - cleanup_start_time))" -lt "$cleanup_old_jobs_loop_timeout_seconds" ]]
   do
     set +e
     local old_jobs="$(kubectl get job -l buildkite/plugin=k8s | awk 'match($4,/[0-9]+d/) {print $1}')"
@@ -41,7 +42,7 @@ function cleanup {
       break
     else
       echo "Attempt to cleanup old jobs failed, exit code '$cleanup_old_jobs_exit_code'"
-      sleep "$cleanup_loop_interval_seconds"
+      sleep "$cleanup_old_jobs_loop_interval_seconds"
     fi
   done
 
@@ -102,11 +103,11 @@ do
   if [[ "$job_apply_exit_code" == "0" ]]; then
     break
   else
-    echo "Attempt apply the job failed, exit code '$job_apply_exit_code'"
+    echo "Attempt to schedule the job failed, exit code '$job_apply_exit_code'"
     sleep "$job_apply_loop_interval_seconds"
   fi
 done
-echo "Apply job exit code '$job_apply_exit_code'"
+echo "Schedule job exit code '$job_apply_exit_code'"
 
 echo "Timeout: ${timeout}s"
 
@@ -114,16 +115,15 @@ echo "+++ :kubernetes: Running image: ${BUILDKITE_PLUGIN_K8S_IMAGE}"
 
 tail_logs &
 
-readonly sleeper="${K8S_BUILDKITE_PLUGIN_SLEEPER_LOOP_INTERVAL:-5}"
 counter=${timeout}
 jobstatus=""
 while [[ -z "$jobstatus" ]] ; do
   set +e
   jobstatus=$(kubectl get job "${job_name}" -o 'jsonpath={.status.conditions[].type}')
   set -e
-  sleep $sleeper
+  sleep "$job_status_loop_sleep_interval"
   if [[ $timeout -gt 0 ]]; then
-    (( counter -= sleeper )) || jobstatus="timeout"
+    (( counter -= job_status_loop_sleep_interval )) || jobstatus="timeout"
   fi
 done
 
