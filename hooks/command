@@ -13,6 +13,7 @@ fi
 ((timeout=BUILDKITE_TIMEOUT*60))
 export BUILDKITE_TIMEOUT
 
+readonly log_loop_interval_seconds="${K8S_BUILDKITE_PLUGIN_LOG_LOOP_INTERVAL:-3}"
 readonly job_log_complete_marker_file="$(mktemp)"
 
 function cleanup {
@@ -34,7 +35,7 @@ function tail_logs {
     if [[ -n "$log_snapshot" ]]; then
       break
     fi
-    sleep 0.2
+    sleep "$log_loop_interval_seconds"
   done
 
   # Run kubectl logs --follow in a loop since it can fail:
@@ -79,7 +80,7 @@ echo "--- :kubernetes: Job status: $jobstatus"
 
 # Wait for logs to be printed because printing runs in a fork and we're racing with it.
 readonly log_wait_start_time="$SECONDS"
-while [[ "$(cat "$job_log_complete_marker_file")" != "0" ]] && [[ "$((SECONDS - log_wait_start_time))" -lt 15 ]]
+while [[ "$(cat "$job_log_complete_marker_file")" != "0" ]] && [[ "$((SECONDS - log_wait_start_time))" -lt 30 ]]
 do
   sleep 0.5
 done
