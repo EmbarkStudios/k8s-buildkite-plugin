@@ -76,7 +76,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
       {
         local kv = std.splitLimit(l, '=', 1),
         name: kv[0],
-        value: kv[1],
+        value: std.stripChars(kv[1], '"'),
       }
       for l in std.split(stepEnvFile, '\n')
       if l != '' && !std.startsWith(l, 'BUILDKITE')
