@@ -68,6 +68,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     BUILDKITE_PLUGIN_K8S_RESOURCES_REQUEST_MEMORY: '',
     BUILDKITE_PLUGIN_K8S_RESOURCES_LIMIT_MEMORY: '',
     BUILDKITE_PLUGIN_K8S_WORKDIR: std.join('/', [env.BUILDKITE_BUILD_PATH, buildSubPath]),
+    BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFTER_FINISHED: 86400,
   } + agentEnv,
 
   local stepEnv =
@@ -260,7 +261,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     backoffLimit: 0,
     activeDeadlineSeconds: deadline,
     completions: 1,
-    ttlSecondsAfterFinished: 600,
+    ttlSecondsAfterFinished: env.BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFTER_FINISHED,
     template: {
       metadata: {
         labels: labels,
