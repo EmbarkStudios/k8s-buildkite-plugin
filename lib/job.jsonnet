@@ -261,7 +261,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     backoffLimit: 0,
     activeDeadlineSeconds: deadline,
     completions: 1,
-    ttlSecondsAfterFinished: env.BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFTER_FINISHED,
+    ttlSecondsAfterFinished: std.parseInt(env.BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFTER_FINISHED),
     template: {
       metadata: {
         labels: labels,
