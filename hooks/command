@@ -78,11 +78,11 @@ do
   if [[ "$job_apply_exit_code" == "0" ]]; then
     break
   else
-    echo "Attempt to schedule the job failed, exit code '$job_apply_exit_code'"
+    echo "Attempt to apply the job failed, exit code '$job_apply_exit_code'"
     sleep "$job_apply_loop_interval_seconds"
   fi
 done
-echo "Schedule job exit code '$job_apply_exit_code'"
+echo "Apply job exit code '$job_apply_exit_code'"
 
 echo "Timeout: ${timeout}s"
 
