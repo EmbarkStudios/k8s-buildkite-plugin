@@ -76,6 +76,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
       {
         local kv = std.splitLimit(l, '=', 1),
         name: kv[0],
+        # Remove outer qoutes added by Buildkite.
         value: std.stripChars(kv[1], '"'),
       }
       for l in std.split(stepEnvFile, '\n')
