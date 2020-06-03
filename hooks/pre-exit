@@ -6,8 +6,10 @@ job_name="$(cat /tmp/job_name)"
 
 echo "--- :kubernetes: Cleanup"
 
-env
-echo "cmd args: $@"
+if [[ "$BUILDKITE_COMMAND_EXIT_STATUS" == "0" ]]; then
+  # If command succeeded there is no need to cleanup k8s jobs (reduces load on apiserver).
+  exit 0
+fi
 
 readonly job_cleanup_loop_interval_seconds="${K8S_PLUGIN_JOB_CLEANUP_LOOP_INTERVAL:-5}"
 readonly job_cleanup_loop_timeout_seconds="${K8S_PLUGIN_JOB_CLEANUP_LOOP_TIMEOUT:-60}"
