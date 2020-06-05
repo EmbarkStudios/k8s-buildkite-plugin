@@ -35,10 +35,11 @@ local numberSuffix(s) =
 
 local labelChars = std.set(std.stringChars('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.'));
 local labelValue(s) =
-  std.join('', [
+  local sanitizedValue = std.join('', [
     if std.setMember(c, labelChars) then c else '_'
     for c in std.stringChars(s)
   ]);
+  if std.length(sanitizedValue) < 63 then sanitizedValue else std.substr(sanitizedValue, 0, 63);
 
 function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
   local buildSubPath = std.join('/', [
