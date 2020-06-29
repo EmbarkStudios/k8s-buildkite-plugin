@@ -57,6 +57,8 @@ configuration:
       type: string
     resources-limit-memory:
       type: string
+    use-agent-node-affinity:
+      type: boolean
   required:
   - image
   additionalProperties: false

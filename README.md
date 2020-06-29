@@ -195,6 +195,10 @@ Sets [memory request](https://kubernetes.io/docs/concepts/configuration/manage-c
 
 Sets [memory limit](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) for the build container.
 
+### `use-agent-node-affinity` (optional, boolean)
+
+If set to `true`, the spawned jobs will use the same [node affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/) and [tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) as the buildkite agent.
+
 ### `workdir` (optional, string)
 
 Override the working directory to run the command in, inside the container. The default is the build directory where the buildkite bootstrap and git checkout runs.
