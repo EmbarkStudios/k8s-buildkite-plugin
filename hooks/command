@@ -31,13 +31,21 @@ echo "--- :kubernetes: Starting Kubernetes Job"
 
 export patchFunc=${BUILDKITE_PLUGIN_K8S_PATCH:-"function(f) f"}
 
-jsonnet \
+jobspec=$(jsonnet \
   --tla-str "jobName=${job_name}" \
   --tla-str-file "stepEnvFile=${BUILDKITE_ENV_FILE}" \
   --tla-code "agentEnv=$(jq -c -n env)" \
   --tla-code patchFunc \
-  "${basedir}/lib/job.jsonnet" \
-  | kubectl apply -f -
+  "${basedir}/lib/job.jsonnet")
+
+if [[ "$BUILDKITE_PLUGIN_K8S_USE_AGENT_NODE_AFFINITY" == 'true' ]]; then
+  for field in affinity tolerations; do
+    buildkite_agent_value=$(kubectl get pod "$(cat /etc/hostname)" -o json | jq ".spec.$field")
+    jobspec=$(echo "$jobspec" | jq ".spec.template.spec.$field=$buildkite_agent_value")
+  done
+fi
+
+echo "$jobspec" | kubectl apply -f -
 
 echo "Timeout: ${timeout}s"
 
