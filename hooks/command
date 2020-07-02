@@ -38,6 +38,7 @@ jobspec=$(jsonnet \
   --tla-code patchFunc \
   "${basedir}/lib/job.jsonnet")
 
+export BUILDKITE_PLUGIN_K8S_USE_AGENT_NODE_AFFINITY=${BUILDKITE_PLUGIN_K8S_USE_AGENT_NODE_AFFINITY:-'false'}
 if [[ "$BUILDKITE_PLUGIN_K8S_USE_AGENT_NODE_AFFINITY" == 'true' ]]; then
   for field in affinity tolerations; do
     buildkite_agent_value=$(kubectl get pod "$(cat /etc/hostname)" -o json | jq ".spec.$field")
