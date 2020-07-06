@@ -130,7 +130,6 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     'build/creator-email': env.BUILDKITE_BUILD_CREATOR_EMAIL,
     'build/id': env.BUILDKITE_BUILD_ID,
     'build/url': env.BUILDKITE_BUILD_URL,
-    'build/message': env.BUILDKITE_MESSAGE,
     'build/number': env.BUILDKITE_BUILD_NUMBER,
     'build/organization': env.BUILDKITE_ORGANIZATION_SLUG,
     'build/repo': env.BUILDKITE_REPO,
