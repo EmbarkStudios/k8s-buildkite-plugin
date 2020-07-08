@@ -159,6 +159,18 @@ Multiple secrets may be mounted by specifying a list of secret/mount pairs.
 
 Example: `my-secret:/my/secret`
 
+### `default-secret-name` (optional, string)
+
+The name of the secret containing the buildkite agent token, ssh and git credentials used for bootstrapping in the init container. The key names of the secret are not configurable and as such must contain the following:
+```yaml
+  buildkite-agent-token: <token>
+  git-credentials: <credentials>
+  ssh-key: <sshkey>
+```
+This is useful if you have control over secret creation and would like to avoid explicitly providing the key and secret names.
+
+Example: `buildkite-secret`
+
 ### `build-path-host-path` (optional, string)
 
 Optionally mount a [host path](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath) to be used as base directory for buildkite builds. This allows local caching and incremental builds using fast local storage.

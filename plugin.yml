@@ -39,6 +39,8 @@ configuration:
       type: string
     agent-token-secret-key:
       type: string
+    default-secret-name:
+      type: string
     build-path-host-path:
       type: string
     build-path-pvc:
