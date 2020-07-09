@@ -19,6 +19,8 @@ configuration:
       type: array
     environment-from-secret:
       type: [string, array]
+    init-environment-from-secret:
+      type: [string, array]
     init-image:
       type: string
     mount-hostpath:

@@ -116,6 +116,13 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
       if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT_FROM_SECRET')
     ],
 
+  local initSecretEnv =
+    [
+      { secretRef: { name: env[f] } }
+      for f in std.objectFields(env)
+      if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_INIT_ENVIRONMENT_FROM_SECRET')
+    ],
+
   local labels = {
     'build/branch': labelValue(env.BUILDKITE_BRANCH),
     'build/pipeline': labelValue(env.BUILDKITE_PIPELINE_SLUG),
@@ -274,7 +281,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
             image: env.BUILDKITE_PLUGIN_K8S_INIT_IMAGE,
             args: ['bootstrap', '--experiment=git-mirrors', '--git-mirrors-path=/git-mirrors', '--ssh-keyscan', '--command', 'true'],
             env: podEnv,
-            envFrom: secretEnv,
+            envFrom: initSecretEnv,
             volumeMounts: [
               { mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' },
               { mountPath: '/git-mirrors', name: 'git-mirrors' },
