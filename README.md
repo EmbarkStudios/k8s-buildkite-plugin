@@ -109,6 +109,12 @@ One or more [Secrets](https://kubernetes.io/docs/concepts/configuration/secret/)
 
 Example: `my-secrets`
 
+### `init-environment-from-secret` (optional, string or array)
+
+One or more [Secrets](https://kubernetes.io/docs/concepts/configuration/secret/) that should be added to the [job init container](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/) as environment variables. Each key in the secret will be exposed as an environment variable. If specified as an array, all listed secrets will be added in order.
+
+Example: `my-secrets`
+
 ### `init-image` (optional, string)
 
 Override the [job initContainer](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/). A buildkite-agent binary is expected to exist to do the checkout, along with git and ssh. The default is to use a public image based on the Dockerfile in this repository.
