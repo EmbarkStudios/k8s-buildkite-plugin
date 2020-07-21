@@ -13,6 +13,7 @@ readonly job_cleanup_loop_timeout_seconds="${K8S_PLUGIN_JOB_CLEANUP_LOOP_TIMEOUT
 readonly job_cleanup_start_time="$SECONDS"
 
 # Optionally skip cleanup if Job succeeded (reduces load on k8s apiserver).
+# Set to "false" if you have TTL Job Controller, https://github.com/lwolf/kube-cleanup-operator or other cleanup controller.
 if [[ "$BUILDKITE_COMMAND_EXIT_STATUS" == "0" && "$job_cleanup_if_successful" != "true" ]]; then
   exit 0
 fi
