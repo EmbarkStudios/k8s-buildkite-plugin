@@ -13,10 +13,15 @@ fi
 ((timeout=BUILDKITE_TIMEOUT*60))
 export BUILDKITE_TIMEOUT
 
+# Default values can be overridden by setting "K8S_PLUGIN_*" env vars as used below.
 readonly job_apply_loop_interval_seconds="${K8S_PLUGIN_JOB_APPLY_LOOP_INTERVAL:-5}"
 readonly job_apply_loop_timeout_seconds="${K8S_PLUGIN_JOB_APPLY_LOOP_TIMEOUT:-120}"
 readonly log_loop_interval_seconds="${K8S_PLUGIN_LOG_LOOP_INTERVAL:-3}"
+readonly log_loop_timeout_seconds="${K8S_PLUGIN_LOG_LOOP_TIMEOUT:-5}"
+readonly log_loop_snapshot_limit_bytes="${K8S_PLUGIN_LOG_LOOP_SNAPSHOT_LIMIT_BYTES:-1024}"
 readonly job_status_loop_sleep_interval="${K8S_PLUGIN_JOB_STATUS_LOOP_INTERVAL:-5}"
+readonly log_complete_loop_interval_seconds="${K8S_PLUGIN_LOG_COMPLETE_LOOP_INTERVAL:-1}"
+readonly log_complete_loop_timeout_seconds="${K8S_PLUGIN_LOG_COMPLETE_LOOP_TIMEOUT:-30}"
 
 readonly job_json="$(mktemp)"
 readonly job_log_complete_marker_file="$(mktemp)"
@@ -33,7 +38,7 @@ function tail_logs {
   while true;
   do
     set +e
-    log_snapshot="$(timeout 5 kubectl logs --limit-bytes 1024 "job/${job_name}" 2>/dev/null)"
+    log_snapshot="$(timeout "$log_loop_timeout_seconds" kubectl logs --limit-bytes "$log_loop_snapshot_limit_bytes" "job/${job_name}" 2>/dev/null)"
     set -e
     if [[ -n "$log_snapshot" ]]; then
       break
@@ -104,11 +109,11 @@ done
 
 echo "--- :kubernetes: Job status: $jobstatus"
 
-# Wait for logs to be printed because printing runs in a fork and we're racing with it.
+# Wait for logs to be fully printed, printing runs in a separate process and we're racing with it.
 readonly log_wait_start_time="$SECONDS"
-while [[ "$(cat "$job_log_complete_marker_file")" != "0" ]] && [[ "$((SECONDS - log_wait_start_time))" -lt 30 ]]
+while [[ "$(cat "$job_log_complete_marker_file")" != "0" ]] && [[ "$((SECONDS - log_wait_start_time))" -lt "$log_complete_loop_timeout_seconds" ]]
 do
-  sleep 0.5
+  sleep "$log_complete_loop_interval_seconds"
 done
 
 status=1
