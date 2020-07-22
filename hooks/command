@@ -22,13 +22,14 @@ readonly log_loop_snapshot_limit_bytes="${K8S_PLUGIN_LOG_LOOP_SNAPSHOT_LIMIT_BYT
 readonly job_status_loop_sleep_interval="${K8S_PLUGIN_JOB_STATUS_LOOP_INTERVAL:-5}"
 readonly log_complete_loop_interval_seconds="${K8S_PLUGIN_LOG_COMPLETE_LOOP_INTERVAL:-1}"
 readonly log_complete_loop_timeout_seconds="${K8S_PLUGIN_LOG_COMPLETE_LOOP_TIMEOUT:-30}"
+readonly use_agent_node_affinity=${BUILDKITE_PLUGIN_K8S_USE_AGENT_NODE_AFFINITY:-false}
 
-readonly job_json="$(mktemp)"
 readonly job_log_complete_marker_file="$(mktemp)"
 
 function cleanup {
-  rm -f "$job_json" "$job_log_complete_marker_file"
+  rm -f "$job_log_complete_marker_file"
 }
+
 trap cleanup EXIT
 
 function tail_logs {
@@ -62,13 +63,19 @@ echo "--- :kubernetes: Starting Kubernetes Job"
 
 export patchFunc=${BUILDKITE_PLUGIN_K8S_PATCH:-"function(f) f"}
 
-jsonnet \
+jobspec="$(jsonnet \
   --tla-str "jobName=${job_name}" \
   --tla-str-file "stepEnvFile=${BUILDKITE_ENV_FILE}" \
   --tla-code "agentEnv=$(jq -c -n env)" \
   --tla-code patchFunc \
-  "${basedir}/lib/job.jsonnet" \
-  > "$job_json"
+  "${basedir}/lib/job.jsonnet")"
+
+if [[ "$use_agent_node_affinity" == "true" ]]; then
+  for field in affinity tolerations; do
+    buildkite_agent_value="$(kubectl get pod "$(cat /etc/hostname)" -o json | jq ".spec.$field")"
+    jobspec="$(echo "$jobspec" | jq ".spec.template.spec.$field=$buildkite_agent_value")"
+  done
+fi
 
 readonly job_apply_start_time="$SECONDS"
 job_apply_exit_code=""
@@ -76,7 +83,7 @@ job_apply_exit_code=""
 while [[ "$((SECONDS - job_apply_start_time))" -lt "$job_apply_loop_timeout_seconds" ]]
 do
   set +e
-  kubectl apply -f "$job_json"
+  echo "$jobspec" | kubectl apply -f -
   job_apply_exit_code="$?"
   set -e
 

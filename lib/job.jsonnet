@@ -52,6 +52,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
   local env = {
     BUILDKITE_TIMEOUT: '10',
     BUILDKITE_PLUGIN_K8S_SECRET_NAME: 'buildkite',
+    BUILDKITE_PLUGIN_K8S_DEFAULT_SECRET_NAME: '',
     BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_KEY: '',
     BUILDKITE_PLUGIN_K8S_GIT_CREDENTIALS_SECRET_NAME: '',
     BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_KEY: '',
@@ -95,7 +96,12 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
       {
         name: 'BUILDKITE_AGENT_TOKEN',
         valueFrom: {
-          secretKeyRef: {
+          secretKeyRef: if env.BUILDKITE_PLUGIN_K8S_DEFAULT_SECRET_NAME != ''
+          then {
+            name: env.BUILDKITE_PLUGIN_K8S_DEFAULT_SECRET_NAME,
+            key: 'buildkite-agent-token'
+          }
+          else {
             name: env.BUILDKITE_PLUGIN_K8S_SECRET_NAME,
             key: env.BUILDKITE_PLUGIN_K8S_AGENT_TOKEN_SECRET_KEY,
           },
@@ -117,6 +123,13 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
       { secretRef: { name: env[f] } }
       for f in std.objectFields(env)
       if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT_FROM_SECRET')
+    ],
+
+  local initSecretEnv =
+    [
+      { secretRef: { name: env[f] } }
+      for f in std.objectFields(env)
+      if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_INIT_ENVIRONMENT_FROM_SECRET')
     ],
 
   local labels = {
@@ -154,6 +167,25 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     then { hostPath: { path: env.BUILDKITE_PLUGIN_K8S_GIT_MIRRORS_HOST_PATH, type: 'DirectoryOrCreate' } }
     else { emptyDir: {} }
   ,
+
+  local defaultSecretsMounts = {
+    mount:
+      if env.BUILDKITE_PLUGIN_K8S_DEFAULT_SECRET_NAME == '' then []
+      else [{ mountPath: '/secrets/', name: 'default-secrets' }],
+    volume:
+      if env.BUILDKITE_PLUGIN_K8S_DEFAULT_SECRET_NAME == '' then []
+      else [{
+        name: 'default-secrets',
+        secret: {
+          defaultMode: 256,
+          secretName: env.BUILDKITE_PLUGIN_K8S_DEFAULT_SECRET_NAME,
+          items: [
+            { key: 'git-credentials', path: 'git-credentials' },
+            { key: 'ssh-key', path: 'ssh-key' },
+          ],
+        },
+      }]
+  },
 
   local gitCredentials = {
     mount:
@@ -277,11 +309,12 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
             image: env.BUILDKITE_PLUGIN_K8S_INIT_IMAGE,
             args: ['bootstrap', '--experiment=git-mirrors', '--git-mirrors-path=/git-mirrors', '--ssh-keyscan', '--command', 'true'],
             env: podEnv,
+            envFrom: initSecretEnv,
             volumeMounts: [
               { mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' },
               { mountPath: '/git-mirrors', name: 'git-mirrors' },
               { mountPath: '/local', name: 'buildkite-agent' },
-            ] + gitCredentials.mount + gitSSH.mount,
+            ] + gitCredentials.mount + gitSSH.mount + defaultSecretsMounts.mount,
           },
         ],
         containers: [
@@ -324,7 +357,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
           { name: 'build' } + buildVolume,
           { name: 'git-mirrors' } + gitMirrorsVolume,
           { name: 'buildkite-agent', emptyDir: {} },
-        ] + gitCredentials.volume + gitSSH.volume + secretMount.volume + hostPathMount.volume,
+        ] + gitCredentials.volume + gitSSH.volume + secretMount.volume + hostPathMount.volume + defaultSecretsMounts.volume,
       },
     },
   },

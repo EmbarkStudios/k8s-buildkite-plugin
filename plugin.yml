@@ -19,6 +19,8 @@ configuration:
       type: array
     environment-from-secret:
       type: [string, array]
+    init-environment-from-secret:
+      type: [string, array]
     init-image:
       type: string
     mount-hostpath:
@@ -41,6 +43,8 @@ configuration:
       type: string
     agent-token-secret-key:
       type: string
+    default-secret-name:
+      type: string
     build-path-host-path:
       type: string
     build-path-pvc:
@@ -59,6 +63,8 @@ configuration:
       type: string
     resources-limit-memory:
       type: string
+    use-agent-node-affinity:
+      type: boolean
   required:
   - image
   additionalProperties: false

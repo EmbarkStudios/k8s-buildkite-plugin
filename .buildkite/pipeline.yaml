@@ -13,14 +13,16 @@ steps:
   - name: Build and publish k8s-buildkite-agent container image
     branches: 'master'
     agents:
-      queue: default
+      queue: monorepo-ci
       os: linux
     plugins:
-      - EmbarkStudios/k8s#1.0.1:
+      - EmbarkStudios/k8s#1.2.6:
           image: gcr.io/kaniko-project/executor:latest
+          default-secret-name: buildkite-k8s-plugin
+          use-agent-node-affinity: true
           command:
             - --destination=embarkstudios/k8s-buildkite-agent
-            - --context=dir://$PWD
+            - --context=.
             - --reproducible
             - --cache=true
             - --cache-repo=kaniko-cache.buildkite.svc.cluster.local/kaniko/cache
