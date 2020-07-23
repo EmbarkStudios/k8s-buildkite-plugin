@@ -23,6 +23,7 @@ readonly job_status_loop_sleep_interval="${K8S_PLUGIN_JOB_STATUS_LOOP_INTERVAL:-
 readonly log_complete_loop_interval_seconds="${K8S_PLUGIN_LOG_COMPLETE_LOOP_INTERVAL:-1}"
 readonly log_complete_loop_timeout_seconds="${K8S_PLUGIN_LOG_COMPLETE_LOOP_TIMEOUT:-30}"
 readonly use_agent_node_affinity=${BUILDKITE_PLUGIN_K8S_USE_AGENT_NODE_AFFINITY:-false}
+readonly print_resulting_job_spec=${BUILDKITE_PLUGIN_K8S_PRINT_RESULTING_JOB_SPEC:-false}
 
 readonly job_log_complete_marker_file="$(mktemp)"
 
@@ -63,7 +64,7 @@ echo "--- :kubernetes: Starting Kubernetes Job"
 
 export patchFunc=${BUILDKITE_PLUGIN_K8S_PATCH:-"function(f) f"}
 
-jobspec="$(jsonnet \
+job_spec="$(jsonnet \
   --tla-str "jobName=${job_name}" \
   --tla-str-file "stepEnvFile=${BUILDKITE_ENV_FILE}" \
   --tla-code "agentEnv=$(jq -c -n env)" \
@@ -73,8 +74,12 @@ jobspec="$(jsonnet \
 if [[ "$use_agent_node_affinity" == "true" ]]; then
   for field in affinity tolerations; do
     buildkite_agent_value="$(kubectl get pod "$(cat /etc/hostname)" -o json | jq ".spec.$field")"
-    jobspec="$(echo "$jobspec" | jq ".spec.template.spec.$field=$buildkite_agent_value")"
+    job_spec="$(echo "$job_spec" | jq ".spec.template.spec.$field=$buildkite_agent_value")"
   done
+fi
+
+if [[ "$print_resulting_job_spec" == "true" ]]; then
+  echo -e "Resulting k8s job spec:\n$job_spec"
 fi
 
 readonly job_apply_start_time="$SECONDS"
@@ -83,7 +88,7 @@ job_apply_exit_code=""
 while [[ "$((SECONDS - job_apply_start_time))" -lt "$job_apply_loop_timeout_seconds" ]]
 do
   set +e
-  echo "$jobspec" | kubectl apply -f -
+  echo "$job_spec" | kubectl apply -f -
   job_apply_exit_code="$?"
   set -e
 
