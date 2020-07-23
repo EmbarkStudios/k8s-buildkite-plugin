@@ -29,8 +29,6 @@ configuration:
       type: [string, array]
     privileged:
       type: boolean
-    job-ttl-seconds-after-finished:
-      type: number
     secret-name:
       type: string
     git-credentials-secret-name:
