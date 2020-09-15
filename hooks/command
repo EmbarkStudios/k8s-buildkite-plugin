@@ -132,6 +132,10 @@ status=1
 if [[ "$jobstatus" == "Complete" ]] ; then
   echo "success"
   status=0
+else
+  readonly pod_name=$(kubectl get pod -l "job-name=$job_name" --output=jsonpath="{.items[*].metadata.name}")
+  readonly pod_json=$(kubectl get pod "$pod_name" -o json)
+  status="$(echo "$pod_json" | jq ".status.containerStatuses[0].state.terminated.exitCode")"
 fi
 
 exit $status
