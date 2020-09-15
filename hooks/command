@@ -128,14 +128,22 @@ do
   sleep "$log_complete_loop_interval_seconds"
 done
 
-status=1
+status=""
 if [[ "$jobstatus" == "Complete" ]] ; then
   echo "success"
   status=0
 else
-  readonly pod_name=$(kubectl get pod -l "job-name=$job_name" --output=jsonpath="{.items[*].metadata.name}")
-  readonly pod_json=$(kubectl get pod "$pod_name" -o json)
-  status="$(echo "$pod_json" | jq ".status.containerStatuses[0].state.terminated.exitCode")"
+  while [[ -z "$status" ]] ; do
+    set +e
+    pod_name=$(kubectl get pod -l "job-name=$job_name" --output=jsonpath="{.items[*].metadata.name}")
+    pod_json=$(kubectl get pod "$pod_name" -o json)
+    status="$(echo "$pod_json" | jq ".status.containerStatuses[0].state.terminated.exitCode")"
+    set -e
+    sleep "$job_status_loop_sleep_interval"
+    if [[ $timeout -gt 0 ]]; then
+      (( counter -= job_status_loop_sleep_interval )) || status="1"
+    fi
+  done
 fi
 
 exit $status
