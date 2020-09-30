@@ -13,14 +13,14 @@ fi
 ((timeout=BUILDKITE_TIMEOUT*60))
 export BUILDKITE_TIMEOUT
 
-# Default values can be overridden by setting "K8S_PLUGIN_*" env vars as used below.
-readonly job_apply_loop_interval_seconds="${K8S_PLUGIN_JOB_APPLY_LOOP_INTERVAL:-5}"
-readonly job_apply_loop_timeout_seconds="${K8S_PLUGIN_JOB_APPLY_LOOP_TIMEOUT:-120}"
-readonly log_loop_interval_seconds="${K8S_PLUGIN_LOG_LOOP_INTERVAL:-3}"
-readonly log_loop_timeout_seconds="${K8S_PLUGIN_LOG_LOOP_TIMEOUT:-5}"
-readonly job_status_loop_sleep_interval="${K8S_PLUGIN_JOB_STATUS_LOOP_INTERVAL:-5}"
-readonly log_complete_loop_interval_seconds="${K8S_PLUGIN_LOG_COMPLETE_LOOP_INTERVAL:-1}"
-readonly log_complete_loop_timeout_seconds="${K8S_PLUGIN_LOG_COMPLETE_LOOP_TIMEOUT:-30}"
+# Default values can be overridden by setting "BUILDKITE_PLUGIN_K8S_*" env vars as used below.
+readonly job_apply_loop_interval_seconds="${BUILDKITE_PLUGIN_K8S_JOB_APPLY_LOOP_INTERVAL:-5}"
+readonly job_apply_loop_timeout_seconds="${BUILDKITE_PLUGIN_K8S_JOB_APPLY_LOOP_TIMEOUT:-120}"
+readonly log_loop_interval_seconds="${BUILDKITE_PLUGIN_K8S_LOG_LOOP_INTERVAL:-3}"
+readonly log_loop_timeout_seconds="${BUILDKITE_PLUGIN_K8S_LOG_LOOP_TIMEOUT:-5}"
+readonly job_status_loop_sleep_interval="${BUILDKITE_PLUGIN_K8S_JOB_STATUS_LOOP_INTERVAL:-5}"
+readonly log_complete_loop_interval_seconds="${BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_LOOP_INTERVAL:-1}"
+readonly log_complete_loop_timeout_seconds="${BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_LOOP_TIMEOUT:-30}"
 readonly use_agent_node_affinity=${BUILDKITE_PLUGIN_K8S_USE_AGENT_NODE_AFFINITY:-false}
 readonly print_resulting_job_spec=${BUILDKITE_PLUGIN_K8S_PRINT_RESULTING_JOB_SPEC:-false}
 
