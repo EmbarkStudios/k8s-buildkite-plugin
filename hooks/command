@@ -23,11 +23,17 @@ readonly log_complete_loop_interval_seconds="${BUILDKITE_PLUGIN_K8S_LOG_COMPLETE
 readonly log_complete_loop_timeout_seconds="${BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_LOOP_TIMEOUT:-30}"
 readonly use_agent_node_affinity=${BUILDKITE_PLUGIN_K8S_USE_AGENT_NODE_AFFINITY:-false}
 readonly print_resulting_job_spec=${BUILDKITE_PLUGIN_K8S_PRINT_RESULTING_JOB_SPEC:-false}
+readonly remove_old_jobs=${BUILDKITE_PLUGIN_K8S_REMOVE_OLD_JOBS:-true}
 
 readonly job_log_complete_marker_file="$(mktemp)"
 
 function cleanup {
   rm -f "$job_log_complete_marker_file"
+
+  if [[ "$remove_old_jobs" == "true" ]]; then
+    # Delete all jobs older than a day.
+    kubectl delete job "$(kubectl get job -l buildkite/plugin=k8s | awk 'match($4,/[0-9]+d/) {print $1}')" 2>/dev/null || true
+  fi
 }
 
 trap cleanup EXIT

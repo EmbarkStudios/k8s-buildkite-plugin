@@ -314,6 +314,12 @@ env:
 - Default: `60`
 - Unit type: integer seconds
 
+#### BUILDKITE_PLUGIN_K8S_REMOVE_OLD_JOBS
+
+- Configures whether plugin should cleanup finished k8s jobs if they're older than 1 day, you might want to disable this in case you rely on [`spec.ttlSecondsAfterFinished`](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) or [lwolf/kube-cleanup-operator](https://github.com/lwolf/kube-cleanup-operator) 
+- Default: `true`
+- Unit type: `true` or `false` string
+
 ## Contributing
 
 We welcome community contributions to this project.
