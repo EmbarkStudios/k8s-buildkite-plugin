@@ -320,6 +320,12 @@ env:
 - Default: `true`
 - Unit type: `true` or `false` string
 
+#### BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFTER_FINISHED
+
+- Configures [`spec.ttlSecondsAfterFinished`](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) on the k8s job, requires TTL Controller enabled in the cluster.
+- Default: `86400`
+- Unit type: integer seconds
+
 ## Contributing
 
 We welcome community contributions to this project.
