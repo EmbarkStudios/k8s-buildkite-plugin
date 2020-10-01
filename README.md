@@ -296,9 +296,9 @@ env:
 - Default: `false`
 - Unit type: `true` or `false` string
 
-#### BUILDKITE_PLUGIN_K8S_JOB_CLEANUP_IF_SUCCESSFUL
+#### BUILDKITE_PLUGIN_K8S_JOB_CLEANUP_AFTER_FINISH
 
-- Configures whether plugin should cleanup k8s job after its successful termination, you might want to disable it in case you rely on [`spec.ttlSecondsAfterFinished`](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) or [lwolf/kube-cleanup-operator](https://github.com/lwolf/kube-cleanup-operator) 
+- Configures whether plugin should cleanup k8s job after it finishes, you might want to disable it in case you rely on [`spec.ttlSecondsAfterFinished`](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) or [lwolf/kube-cleanup-operator](https://github.com/lwolf/kube-cleanup-operator) 
 - Default: `true`
 - Unit type: `true` or `false` string
 
@@ -316,7 +316,7 @@ env:
 
 #### BUILDKITE_PLUGIN_K8S_REMOVE_OLD_JOBS
 
-- Configures whether plugin should cleanup finished k8s jobs if they're older than 1 day, you might want to disable this in case you rely on [`spec.ttlSecondsAfterFinished`](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) or [lwolf/kube-cleanup-operator](https://github.com/lwolf/kube-cleanup-operator) 
+- Configures whether plugin should cleanup k8s jobs if they're older than 1 day, you might want to disable this in case you rely on [`spec.ttlSecondsAfterFinished`](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) or [lwolf/kube-cleanup-operator](https://github.com/lwolf/kube-cleanup-operator) 
 - Default: `true`
 - Unit type: `true` or `false` string
 

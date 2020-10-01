@@ -7,14 +7,14 @@ job_name="$(cat /tmp/job_name)"
 echo "--- :kubernetes: Cleanup"
 
 # Default values can be overridden by setting "BUILDKITE_PLUGIN_K8S_*" env vars as used below.
-readonly job_cleanup_if_successful="${BUILDKITE_PLUGIN_K8S_JOB_CLEANUP_IF_SUCCESSFUL:-true}"
+readonly job_cleanup_after_finish="${BUILDKITE_PLUGIN_K8S_JOB_CLEANUP_AFTER_FINISH:-true}"
 readonly job_cleanup_loop_interval_seconds="${BUILDKITE_PLUGIN_K8S_JOB_CLEANUP_LOOP_INTERVAL:-5}"
 readonly job_cleanup_loop_timeout_seconds="${BUILDKITE_PLUGIN_K8S_JOB_CLEANUP_LOOP_TIMEOUT:-60}"
 readonly job_cleanup_start_time="$SECONDS"
 
 # Optionally skip cleanup if Job succeeded (reduces load on k8s apiserver).
 # Set to "false" if you have TTL Job Controller, https://github.com/lwolf/kube-cleanup-operator or other cleanup controller.
-if [[ "$BUILDKITE_COMMAND_EXIT_STATUS" == "0" && "$job_cleanup_if_successful" != "true" ]]; then
+if [[ "$job_cleanup_after_finish" != "true" ]]; then
   exit 0
 fi
 
