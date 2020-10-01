@@ -104,7 +104,11 @@ do
     sleep "$job_apply_loop_interval_seconds"
   fi
 done
-echo "Apply job exit code '$job_apply_exit_code'"
+
+if [[ "$job_apply_exit_code" != "0" ]]; then
+  echo "Failed to apply job, exit code '$job_apply_exit_code'"
+  exit "$job_apply_exit_code"
+fi
 
 echo "Timeout: ${timeout}s"
 
