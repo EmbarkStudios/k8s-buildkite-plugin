@@ -17,7 +17,7 @@ export BUILDKITE_TIMEOUT
 readonly job_apply_loop_interval_seconds="${BUILDKITE_PLUGIN_K8S_JOB_APPLY_LOOP_INTERVAL:-5}"
 readonly job_apply_loop_timeout_seconds="${BUILDKITE_PLUGIN_K8S_JOB_APPLY_LOOP_TIMEOUT:-120}"
 readonly log_loop_interval_seconds="${BUILDKITE_PLUGIN_K8S_LOG_LOOP_INTERVAL:-3}"
-readonly log_loop_timeout_seconds="${BUILDKITE_PLUGIN_K8S_LOG_LOOP_TIMEOUT:-5}"
+readonly log_loop_attempt_timeout_seconds="${BUILDKITE_PLUGIN_K8S_LOG_LOOP_ATTEMPT_TIMEOUT:-5}"
 readonly job_status_loop_sleep_interval="${BUILDKITE_PLUGIN_K8S_JOB_STATUS_LOOP_INTERVAL:-5}"
 readonly log_complete_loop_interval_seconds="${BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_LOOP_INTERVAL:-1}"
 readonly log_complete_loop_timeout_seconds="${BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_LOOP_TIMEOUT:-30}"
@@ -39,7 +39,7 @@ function tail_logs {
   while true;
   do
     set +e
-    log_snapshot="$(timeout "$log_loop_timeout_seconds" kubectl logs --limit-bytes "1024" "job/${job_name}" 2>/dev/null)"
+    log_snapshot="$(timeout "$log_loop_attempt_timeout_seconds" kubectl logs --limit-bytes "1024" "job/${job_name}" 2>/dev/null)"
     set -e
     if [[ -n "$log_snapshot" ]]; then
       break

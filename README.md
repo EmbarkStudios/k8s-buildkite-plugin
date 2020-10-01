@@ -239,6 +239,81 @@ patch: |
   }
 ```
 
+### Configurable Environment Variables
+
+Some of the plugin options can be configured via environment variables as following ([also see Buildkite docs](https://buildkite.com/docs/pipelines/environment-variables#defining-your-own)):
+
+```yaml
+env:
+  BUILDKITE_PLUGIN_K8S_PRINT_RESULTING_JOB_SPEC: "true"
+```
+
+#### BUILDKITE_PLUGIN_K8S_JOB_APPLY_LOOP_INTERVAL
+
+- Configures loop interval between plugin attempts to schedule the k8s job
+- Default: `5`
+- Unit type: integer seconds
+
+#### BUILDKITE_PLUGIN_K8S_JOB_APPLY_LOOP_TIMEOUT
+
+- Configures time limit for plugin attempts to schedule the k8s job
+- Default: `120`
+- Unit type: integer seconds
+
+#### BUILDKITE_PLUGIN_K8S_JOB_STATUS_LOOP_INTERVAL
+
+- Configures loop interval for plugin attempts to get k8s job status
+- Default: `5`
+- Unit type: integer seconds
+
+#### BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_LOOP_INTERVAL
+
+- Configures loop interval for plugin attempts to verify that log streaming has ended
+- Default: `1`
+- Unit type: integer seconds
+
+#### BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_LOOP_TIMEOUT
+
+- Configures time limit for plugin attempts to verify that log streaming has ended
+- Default: `30`
+- Unit type: integer seconds
+
+#### BUILDKITE_PLUGIN_K8S_LOG_LOOP_INTERVAL
+
+- Configures loop interval for plugin attempts to stream job logs
+- Default: `3`
+- Unit type: integer seconds
+
+#### BUILDKITE_PLUGIN_K8S_LOG_LOOP_ATTEMPT_TIMEOUT
+
+- Configures time limit for a _single_ plugin attempt to stream job logs
+- Default: `5`
+- Unit type: integer seconds
+
+#### BUILDKITE_PLUGIN_K8S_PRINT_RESULTING_JOB_SPEC
+
+- Configures whether plugin should print resulting k8s job spec into the log 
+- Default: `false`
+- Unit type: `true` or `false` string
+
+#### BUILDKITE_PLUGIN_K8S_JOB_CLEANUP_IF_SUCCESSFUL
+
+- Configures whether plugin should cleanup k8s job after its successful termination, you might want to disable it in case you rely on [`spec.ttlSecondsAfterFinished`](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) or [lwolf/kube-cleanup-operator](https://github.com/lwolf/kube-cleanup-operator) 
+- Default: `true`
+- Unit type: `true` or `false` string
+
+#### BUILDKITE_PLUGIN_K8S_JOB_CLEANUP_LOOP_INTERVAL
+
+- Configures loop interval for plugin attempts to cleanup finished jobs
+- Default: `5`
+- Unit type: integer seconds
+
+#### BUILDKITE_PLUGIN_K8S_JOB_CLEANUP_LOOP_TIMEOUT
+
+- Configures time limit for plugin attempts to cleanup finished jobs
+- Default: `60`
+- Unit type: integer seconds
+
 ## Contributing
 
 We welcome community contributions to this project.
