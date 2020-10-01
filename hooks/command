@@ -122,7 +122,13 @@ while [[ -z "$jobstatus" ]] ; do
   set +e
   jobstatus=$(kubectl get job "${job_name}" -o 'jsonpath={.status.conditions[].type}')
   set -e
-  sleep "$job_status_loop_sleep_interval"
+
+  if [[ -n "$jobstatus" ]]; then
+    break
+  else
+    sleep "$job_status_loop_sleep_interval"
+  fi
+
   if [[ $timeout -gt 0 ]]; then
     (( counter -= job_status_loop_sleep_interval )) || jobstatus="timeout"
   fi
