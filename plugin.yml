@@ -69,7 +69,10 @@ configuration:
     job-ttl-seconds-after-finished:
       type: integer
       default: 86400
-    builtin-jobs-cleanup:
+    jobs-cleanup-via-plugin:
+      type: boolean
+      default: true
+    job-cleanup-after-finished-via-plugin:
       type: boolean
       default: true
   required:

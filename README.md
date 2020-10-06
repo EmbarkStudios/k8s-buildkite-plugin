@@ -246,12 +246,21 @@ If set to `true`, the resulting k8s job spec is printed to the log, can be usefu
 ### `job-ttl-seconds-after-finished` (optinal, integer)
 
 Configures [`spec.ttlSecondsAfterFinished`](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) on the k8s job, requires TTL Controller enabled in the cluster, otherwise ignored.
-Default value: `86400`. If you have TTL controller running, it is highly recommended to set `builtin-jobs-cleanup` to `false` to reduce load on k8s api servers. 
+Default value: `86400`.  
 
-### `builtin-jobs-cleanup` (optional, boolean)
+### `jobs-cleanup-via-plugin` (optional, boolean)
 
 If set to `true` plugin cleans up k8s jobs older than 1 day even if they're still running. 
 Default value: `true`.
+
+If you have TTL controller or https://github.com/lwolf/kube-cleanup-operator running, it is highly recommended to set the value to `false` to reduce load on k8s api servers.
+
+### `job-cleanup-after-finished-via-plugin` (optional, boolean)
+
+If set to `true` plugin cleans up finished k8s job.
+Default value: `true`.
+
+If you have TTL controller or https://github.com/lwolf/kube-cleanup-operator running, it is highly recommended to set the value to `false` to reduce load on k8s api servers.
 
 ## Low Level Configuration via Environment Variables
 
