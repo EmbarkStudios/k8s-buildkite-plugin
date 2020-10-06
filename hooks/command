@@ -14,13 +14,13 @@ fi
 export BUILDKITE_TIMEOUT
 
 # Default values can be overridden by setting "BUILDKITE_PLUGIN_K8S_*" env vars as used below.
-readonly job_apply_loop_interval_seconds="${BUILDKITE_PLUGIN_K8S_JOB_APPLY_LOOP_INTERVAL:-5}"
-readonly job_apply_loop_timeout_seconds="${BUILDKITE_PLUGIN_K8S_JOB_APPLY_LOOP_TIMEOUT:-120}"
-readonly log_loop_interval_seconds="${BUILDKITE_PLUGIN_K8S_LOG_LOOP_INTERVAL:-3}"
-readonly log_loop_attempt_timeout_seconds="${BUILDKITE_PLUGIN_K8S_LOG_LOOP_ATTEMPT_TIMEOUT:-5}"
-readonly job_status_loop_sleep_interval="${BUILDKITE_PLUGIN_K8S_JOB_STATUS_LOOP_INTERVAL:-5}"
-readonly log_complete_loop_interval_seconds="${BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_LOOP_INTERVAL:-1}"
-readonly log_complete_loop_timeout_seconds="${BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_LOOP_TIMEOUT:-30}"
+readonly job_apply_retry_interval_sec="${BUILDKITE_PLUGIN_K8S_JOB_APPLY_RETRY_INTERVAL_SEC:-5}"
+readonly job_apply_timeout_sec="${BUILDKITE_PLUGIN_K8S_JOB_APPLY_TIMEOUT_SEC:-120}"
+readonly log_loop_retry_interval_sec="${BUILDKITE_PLUGIN_K8S_LOG_RETRY_INTERVAL_SEC:-3}"
+readonly log_attempt_timeout_sec="${BUILDKITE_PLUGIN_K8S_LOG_ATTEMPT_TIMEOUT_SEC:-5}"
+readonly job_status_retry_interval_sec="${BUILDKITE_PLUGIN_K8S_JOB_STATUS_RETRY_INTERVAL_SEC:-5}"
+readonly log_complete_retry_interval_sec="${BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_RETRY_INTERVAL_SEC:-1}"
+readonly log_complete_timeout_sec="${BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_TIMEOUT_SEC:-30}"
 readonly use_agent_node_affinity=${BUILDKITE_PLUGIN_K8S_USE_AGENT_NODE_AFFINITY:-false}
 readonly print_resulting_job_spec=${BUILDKITE_PLUGIN_K8S_PRINT_RESULTING_JOB_SPEC:-false}
 readonly jobs_cleanup_via_plugin=${BUILDKITE_PLUGIN_K8S_JOBS_CLEANUP_VIA_PLUGIN:-}
@@ -45,12 +45,12 @@ function tail_logs {
   while true;
   do
     set +e
-    log_snapshot="$(timeout "$log_loop_attempt_timeout_seconds" kubectl logs --limit-bytes "1024" "job/${job_name}" 2>/dev/null)"
+    log_snapshot="$(timeout "$log_attempt_timeout_sec" kubectl logs --limit-bytes "1024" "job/${job_name}" 2>/dev/null)"
     set -e
     if [[ -n "$log_snapshot" ]]; then
       break
     fi
-    sleep "$log_loop_interval_seconds"
+    sleep "$log_loop_retry_interval_sec"
   done
 
   # Run kubectl logs --follow in a loop since it can fail:
@@ -59,7 +59,7 @@ function tail_logs {
   #   3) It can hang not providing any result, that's why we check not only exit code but also contents in the loop above.
   while ! kubectl logs --follow "job/${job_name}" 2>/dev/null;
   do
-    sleep "$log_loop_interval_seconds"
+    sleep "$log_loop_retry_interval_sec"
   done
 
   echo "0" > "$job_log_complete_marker_file"
@@ -90,7 +90,7 @@ fi
 readonly job_apply_start_time="$SECONDS"
 job_apply_exit_code=""
 
-while [[ "$((SECONDS - job_apply_start_time))" -lt "$job_apply_loop_timeout_seconds" ]]
+while [[ "$((SECONDS - job_apply_start_time))" -lt "$job_apply_timeout_sec" ]]
 do
   set +e
   echo "$job_spec" | kubectl apply -f -
@@ -101,7 +101,7 @@ do
     break
   else
     echo "Attempt to apply the job failed, exit code '$job_apply_exit_code'"
-    sleep "$job_apply_loop_interval_seconds"
+    sleep "$job_apply_retry_interval_sec"
   fi
 done
 
@@ -126,11 +126,11 @@ while [[ -z "$jobstatus" ]] ; do
   if [[ -n "$jobstatus" ]]; then
     break
   else
-    sleep "$job_status_loop_sleep_interval"
+    sleep "$job_status_retry_interval_sec"
   fi
 
   if [[ $timeout -gt 0 ]]; then
-    (( counter -= job_status_loop_sleep_interval )) || jobstatus="timeout"
+    (( counter -= job_status_retry_interval_sec )) || jobstatus="timeout"
   fi
 done
 
@@ -138,9 +138,9 @@ echo "--- :kubernetes: Job status: $jobstatus"
 
 # Wait for logs to be fully printed, printing runs in a separate process and we're racing with it.
 readonly log_complete_start_time="$SECONDS"
-while [[ "$(cat "$job_log_complete_marker_file")" != "0" ]] && [[ "$((SECONDS - log_complete_start_time))" -lt "$log_complete_loop_timeout_seconds" ]]
+while [[ "$(cat "$job_log_complete_marker_file")" != "0" ]] && [[ "$((SECONDS - log_complete_start_time))" -lt "$log_complete_timeout_sec" ]]
 do
-  sleep "$log_complete_loop_interval_seconds"
+  sleep "$log_complete_retry_interval_sec"
 done
 
 status=""
@@ -154,9 +154,9 @@ else
     pod_json=$(kubectl get pod "$pod_name" -o json)
     status="$(echo "$pod_json" | jq ".status.containerStatuses[0].state.terminated.exitCode")"
     set -e
-    sleep "$job_status_loop_sleep_interval"
+    sleep "$job_status_retry_interval_sec"
     if [[ $timeout -gt 0 ]]; then
-      (( counter -= job_status_loop_sleep_interval )) || status="1"
+      (( counter -= job_status_retry_interval_sec )) || status="1"
     fi
   done
 fi
