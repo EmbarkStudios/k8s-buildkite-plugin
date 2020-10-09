@@ -139,7 +139,7 @@ done
 echo "Pod is running: $pod_name"
 
 echo "--- :kubernetes: bootstrap container"
-tail_log "$pod_name" "bootstrap" "$bootstrap_container_log_complete_marker_file"
+tail_logs "$pod_name" "bootstrap" "$bootstrap_container_log_complete_marker_file"
 
 echo "+++ :kubernetes: step container"
 tail_logs "$pod_name" "step" "$step_container_log_complete_marker_file" &
