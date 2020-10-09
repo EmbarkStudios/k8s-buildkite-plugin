@@ -146,19 +146,34 @@ done
 status=""
 if [[ "$jobstatus" == "Complete" ]] ; then
   echo "success"
-  status=0
+  status="0"
 else
-  while [[ -z "$status" ]] ; do
+  while true
+  do
     set +e
     pod_name=$(kubectl get pod -l "job-name=$job_name" --output=jsonpath="{.items[*].metadata.name}")
     pod_json=$(kubectl get pod "$pod_name" -o json)
-    status="$(echo "$pod_json" | jq ".status.containerStatuses[0].state.terminated.exitCode")"
+    init_container_status="$(echo "$pod_json" | jq ".status.initContainerStatuses[0].state.terminated.exitCode")"
+    if [[ -n "$init_container_status" && "$init_container_status" != "0" ]]; then
+      status="$init_container_status"
+    else
+      status="$(echo "$pod_json" | jq ".status.containerStatuses[0].state.terminated.exitCode")"
+    fi
     set -e
-    sleep "$job_status_retry_interval_sec"
-    if [[ $timeout -gt 0 ]]; then
-      (( counter -= job_status_retry_interval_sec )) || status="1"
+    if [[ -n "$status" ]]; then
+      break
+    else
+      sleep "$job_status_retry_interval_sec"
+      if [[ $timeout -gt 0 ]]; then
+        (( counter -= job_status_retry_interval_sec ))
+      fi
     fi
   done
 fi
 
-exit $status
+if [[ -z "$status" ]]; then
+  echo "Warning: could not get actual exit code of the job"
+  status="42"
+fi
+
+exit "$status"
