@@ -25,10 +25,11 @@ readonly use_agent_node_affinity=${BUILDKITE_PLUGIN_K8S_USE_AGENT_NODE_AFFINITY:
 readonly print_resulting_job_spec=${BUILDKITE_PLUGIN_K8S_PRINT_RESULTING_JOB_SPEC:-false}
 readonly jobs_cleanup_via_plugin=${BUILDKITE_PLUGIN_K8S_JOBS_CLEANUP_VIA_PLUGIN:-}
 
-readonly job_log_complete_marker_file="$(mktemp)"
+readonly bootstrap_container_log_complete_marker_file="$(mktemp)"
+readonly step_container_log_complete_marker_file="$(mktemp)"
 
 function cleanup {
-  rm -f "$job_log_complete_marker_file"
+  rm -f "$bootstrap_container_log_complete_marker_file" "$step_container_log_complete_marker_file"
 
   if [[ "$jobs_cleanup_via_plugin" == "true" ]]; then
     # Delete all jobs older than a day.
@@ -39,13 +40,17 @@ function cleanup {
 trap cleanup EXIT
 
 function tail_logs {
+  local -r pod_name="$1"
+  local -r container_name="$2"
+  local -r log_completion_marker_file="$3"
+
   local log_snapshot=""
   # Once logs are not empty we start attempting to stream them.
   # Keep looping otherwise since empty output means that there is no useful log to display so we're not losing information by looping.
   while true;
   do
     set +e
-    log_snapshot="$(timeout "$log_attempt_timeout_sec" kubectl logs --limit-bytes "1024" "job/${job_name}" 2>/dev/null)"
+    log_snapshot="$(timeout "$log_attempt_timeout_sec" kubectl logs --limit-bytes "1024" "pod/$pod_name" --container "$container_name" 2>/dev/null)"
     set -e
     if [[ -n "$log_snapshot" ]]; then
       break
@@ -57,12 +62,12 @@ function tail_logs {
   #   1) It can fail due to pod not being initialized yet: "Error from server (BadRequest): container "step" in pod "somepod" is waiting to start: PodInitializing"
   #   2) It can fail mid-streaming, in this case we unfortunately will display logs multiple times (partially).
   #   3) It can hang not providing any result, that's why we check not only exit code but also contents in the loop above.
-  while ! kubectl logs --follow "job/${job_name}" 2>/dev/null;
+  while ! kubectl logs --follow "pod/$pod_name" --container "$container_name" 2>/dev/null;
   do
     sleep "$log_loop_retry_interval_sec"
   done
 
-  echo "0" > "$job_log_complete_marker_file"
+  echo "0" > "$log_completion_marker_file"
 }
 
 echo "--- :kubernetes: Starting Kubernetes Job"
@@ -112,11 +117,34 @@ fi
 
 echo "Timeout: ${timeout}s"
 
-echo "+++ :kubernetes: Running image: ${BUILDKITE_PLUGIN_K8S_IMAGE}"
+echo "--- :kubernetes: Running image: ${BUILDKITE_PLUGIN_K8S_IMAGE}"
 
-tail_logs &
+counter="$timeout"
+while true
+do
+  set +e
+  pod_name=$(kubectl get pod -l "job-name=$job_name" --output=jsonpath="{.items[*].metadata.name}")
+  set -e
 
-counter=${timeout}
+  if [[ -n "$pod_name" ]]; then
+    break
+  else
+    sleep "$job_status_retry_interval_sec"
+    if [[ $timeout -gt 0 ]]; then
+      (( counter -= job_status_retry_interval_sec ))
+    fi
+  fi
+done
+
+echo "Pod is running: $pod_name"
+
+echo "--- :kubernetes: bootstrap container"
+tail_log "$pod_name" "bootstrap" "$bootstrap_container_log_complete_marker_file"
+
+echo "+++ :kubernetes: step container"
+tail_logs "$pod_name" "step" "$step_container_log_complete_marker_file" &
+
+counter="$timeout"
 jobstatus=""
 while [[ -z "$jobstatus" ]] ; do
   set +e
@@ -138,7 +166,7 @@ echo "--- :kubernetes: Job status: $jobstatus"
 
 # Wait for logs to be fully printed, printing runs in a separate process and we're racing with it.
 readonly log_complete_start_time="$SECONDS"
-while [[ "$(cat "$job_log_complete_marker_file")" != "0" ]] && [[ "$((SECONDS - log_complete_start_time))" -lt "$log_complete_timeout_sec" ]]
+while [[ "$(cat "$step_container_log_complete_marker_file")" != "0" ]] && [[ "$((SECONDS - log_complete_start_time))" -lt "$log_complete_timeout_sec" ]]
 do
   sleep "$log_complete_retry_interval_sec"
 done
@@ -151,7 +179,6 @@ else
   while true
   do
     set +e
-    pod_name=$(kubectl get pod -l "job-name=$job_name" --output=jsonpath="{.items[*].metadata.name}")
     pod_json=$(kubectl get pod "$pod_name" -o json)
     init_container_status="$(echo "$pod_json" | jq ".status.initContainerStatuses[0].state.terminated.exitCode")"
     if [[ -n "$init_container_status" && "$init_container_status" != "0" ]]; then
