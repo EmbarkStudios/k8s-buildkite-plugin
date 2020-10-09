@@ -155,6 +155,7 @@ else
     pod_json=$(kubectl get pod "$pod_name" -o json)
     init_container_status="$(echo "$pod_json" | jq ".status.initContainerStatuses[0].state.terminated.exitCode")"
     if [[ -n "$init_container_status" && "$init_container_status" != "0" ]]; then
+      echo "Warning: init container failed with exit code $init_container_status, this usually indicates plugin misconfiguration or infrastructure failure"
       status="$init_container_status"
     else
       status="$(echo "$pod_json" | jq ".status.containerStatuses[0].state.terminated.exitCode")"
