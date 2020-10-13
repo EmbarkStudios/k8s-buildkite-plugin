@@ -158,7 +158,7 @@ while [[ -z "$jobstatus" ]] ; do
   fi
 
   if [[ $timeout -gt 0 ]]; then
-    (( counter -= job_status_retry_interval_sec )) || jobstatus="timeout"
+    (( counter -= job_status_retry_interval_sec )) || jobstatus="timed-out"
   fi
 done
 
