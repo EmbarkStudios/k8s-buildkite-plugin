@@ -7,8 +7,10 @@ steps:
       - echo "Running shellcheck"
       - shellcheck hooks/*
     plugins:
-      - EmbarkStudios/k8s#1.0.1:
+      - EmbarkStudios/k8s#1.2.6:
           image: koalaman/shellcheck-alpine
+          default-secret-name: buildkite-k8s-plugin
+          use-agent-node-affinity: true
   - wait
   - name: Build and publish k8s-buildkite-agent container image
     branches: 'master'
