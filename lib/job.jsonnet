@@ -297,7 +297,9 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     template: {
       metadata: {
         labels: labels,
-        annotations: annotations,
+        # Take all the same annotations as the job itself on the pod, but also add the istio inject false annotation
+        # Istio gets in the way of many jobs
+        annotations: annotations + {sidecar.istio.io/inject: "false"},
       },
       spec: {
         activeDeadlineSeconds: deadline,
