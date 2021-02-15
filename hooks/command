@@ -25,8 +25,10 @@ readonly use_agent_node_affinity=${BUILDKITE_PLUGIN_K8S_USE_AGENT_NODE_AFFINITY:
 readonly print_resulting_job_spec=${BUILDKITE_PLUGIN_K8S_PRINT_RESULTING_JOB_SPEC:-false}
 readonly jobs_cleanup_via_plugin=${BUILDKITE_PLUGIN_K8S_JOBS_CLEANUP_VIA_PLUGIN:-}
 
-readonly bootstrap_container_log_complete_marker_file="$(mktemp)"
-readonly step_container_log_complete_marker_file="$(mktemp)"
+bootstrap_container_log_complete_marker_file="$(mktemp)"
+readonly bootstrap_container_log_complete_marker_file
+step_container_log_complete_marker_file="$(mktemp)"
+readonly step_container_log_complete_marker_file
 
 function cleanup {
   rm -f "$bootstrap_container_log_complete_marker_file" "$step_container_log_complete_marker_file"
