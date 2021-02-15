@@ -63,6 +63,18 @@ configuration:
       type: string
     use-agent-node-affinity:
       type: boolean
+    print-resulting-job-spec:
+      type: boolean
+      default: false
+    job-ttl-seconds-after-finished:
+      type: integer
+      default: 86400
+    jobs-cleanup-via-plugin:
+      type: boolean
+      default: true
+    job-cleanup-after-finished-via-plugin:
+      type: boolean
+      default: true
   required:
   - image
   additionalProperties: false

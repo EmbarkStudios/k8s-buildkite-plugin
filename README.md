@@ -239,6 +239,92 @@ patch: |
   }
 ```
 
+### `print-resulting-job-spec` (optional, boolean)
+
+If set to `true`, the resulting k8s job spec is printed to the log. This can be useful when debugging.
+
+### `job-ttl-seconds-after-finished` (optional, integer)
+
+Configures [`spec.ttlSecondsAfterFinished`](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) on the k8s job, requires TTL Controller enabled in the cluster, otherwise ignored.
+Default value: `86400`.  
+
+### `jobs-cleanup-via-plugin` (optional, boolean)
+
+If set to `true`, the plugin cleans up k8s jobs older than 1 day even if they're still running. 
+Default value: `true`.
+
+If you have [TTL Controller](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) enabled or some other means to cleanup finished jobs, it is recommended to set the value to `false` in order to reduce load on k8s api servers.
+
+### `job-cleanup-after-finished-via-plugin` (optional, boolean)
+
+If set to `true` plugin cleans up finished k8s job.
+Default value: `true`.
+
+If you have TTL controller or https://github.com/lwolf/kube-cleanup-operator running, it is highly recommended to set the value to `false` to reduce load on k8s api servers.
+
+## Low Level Configuration via Environment Variables
+
+Some of the plugin options can be configured via environment variables as following ([also see Buildkite docs](https://buildkite.com/docs/pipelines/environment-variables#defining-your-own)):
+
+```yaml
+env:
+  BUILDKITE_PLUGIN_K8S_JOB_APPLY_RETRY_INTERVAL_SEC: "10"
+```
+
+### BUILDKITE_PLUGIN_K8S_JOB_APPLY_RETRY_INTERVAL_SEC
+
+- Configures the interval between attempts to schedule the k8s job
+- Default: `5`
+- Unit type: integer seconds
+
+### BUILDKITE_PLUGIN_K8S_JOB_APPLY_TIMEOUT_SEC
+
+- Configures the total time limit across attempts to schedule the k8s job
+- Default: `120`
+- Unit type: integer seconds
+
+### BUILDKITE_PLUGIN_K8S_JOB_STATUS_RETRY_INTERVAL_SEC
+
+- Configures the interval between attempts to get k8s job status
+- Default: `5`
+- Unit type: integer seconds
+
+### BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_RETRY_INTERVAL_SEC
+
+- Configures the interval between attempts to verify that log streaming has ended
+- Default: `1`
+- Unit type: integer seconds
+
+### BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_TIMEOUT_SEC
+
+- Configures the total time limit across attempts to verify that log streaming has ended
+- Default: `30`
+- Unit type: integer seconds
+
+### BUILDKITE_PLUGIN_K8S_LOG_RETRY_INTERVAL_SEC
+
+- Configures the interval between attempts to stream job logs
+- Default: `3`
+- Unit type: integer seconds
+
+### BUILDKITE_PLUGIN_K8S_LOG_ATTEMPT_TIMEOUT_SEC
+
+- Configures time limit for a _single_ plugin attempt to stream job logs
+- Default: `5`
+- Unit type: integer seconds
+
+### BUILDKITE_PLUGIN_K8S_JOB_CLEANUP_RETRY_INTERVAL_SEC
+
+- Configures the interval between attempts to cleanup finished jobs
+- Default: `5`
+- Unit type: integer seconds
+
+### BUILDKITE_PLUGIN_K8S_JOB_CLEANUP_TIMEOUT_SEC
+
+- Configures the total time limit across attempts to cleanup finished jobs
+- Default: `60`
+- Unit type: integer seconds
+
 ## Contributing
 
 We welcome community contributions to this project.

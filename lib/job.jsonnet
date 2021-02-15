@@ -8,6 +8,7 @@ local allowedEnvs = std.set(
     'BUILDKITE_MESSAGE',
     'BUILDKITE_BUILD_CREATOR',
     'BUILDKITE_BUILD_CREATOR_EMAIL',
+    'BUILDKITE_BUILD_ID',
     'BUILDKITE_BUILD_NUMBER',
     'BUILDKITE_BUILD_PATH',
     'BUILDKITE_BUILD_URL',
@@ -37,10 +38,11 @@ local numberSuffix(s) =
 
 local labelChars = std.set(std.stringChars('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.'));
 local labelValue(s) =
-  std.join('', [
+  local sanitizedValue = std.join('', [
     if std.setMember(c, labelChars) then c else '_'
     for c in std.stringChars(s)
   ]);
+  if std.length(sanitizedValue) < 63 then sanitizedValue else std.substr(sanitizedValue, 0, 63);
 
 function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
   local buildSubPath = std.join('/', [
@@ -71,6 +73,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     BUILDKITE_PLUGIN_K8S_RESOURCES_REQUEST_MEMORY: '',
     BUILDKITE_PLUGIN_K8S_RESOURCES_LIMIT_MEMORY: '',
     BUILDKITE_PLUGIN_K8S_WORKDIR: std.join('/', [env.BUILDKITE_BUILD_PATH, buildSubPath]),
+    BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFTER_FINISHED: '86400',
   } + agentEnv,
 
   local stepEnv =
@@ -143,7 +146,6 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     'build/creator-email': env.BUILDKITE_BUILD_CREATOR_EMAIL,
     'build/id': env.BUILDKITE_BUILD_ID,
     'build/url': env.BUILDKITE_BUILD_URL,
-    'build/message': env.BUILDKITE_MESSAGE,
     'build/number': env.BUILDKITE_BUILD_NUMBER,
     'build/organization': env.BUILDKITE_ORGANIZATION_SLUG,
     'build/repo': env.BUILDKITE_REPO,
@@ -294,6 +296,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     backoffLimit: 0,
     activeDeadlineSeconds: deadline,
     completions: 1,
+    ttlSecondsAfterFinished: std.parseInt(env.BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFTER_FINISHED),
     template: {
       metadata: {
         labels: labels,
