@@ -4,7 +4,12 @@ set -euo pipefail
 
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 
-job_name="${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}-$(head -c 5 /dev/urandom | base32 | tr '[:upper:]' '[:lower:]')"
+# Ensure a name is a valid k8s resource name.
+function sanitize() {
+  echo "$@" | sed -E 's/[^A-Za-z0-9]/-/g' | sed -E 's/^[^a-zA-Z]|[^a-zA-Z]$//' | cut -c 1-63
+}
+
+job_name=$(sanitize "${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}-$(head -c 5 /dev/urandom | base32 | tr '[:upper:]' '[:lower:]')")
 echo "${job_name}" > /tmp/job_name
 
 if [[ ${BUILDKITE_TIMEOUT:-"false"} == "false" ]]; then
