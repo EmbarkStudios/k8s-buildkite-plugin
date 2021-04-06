@@ -1,5 +1,6 @@
 local allowedEnvs = std.set(
   [
+    'BUILDKITE',
     'BUILDKITE_AGENT_ACCESS_TOKEN',
     'BUILDKITE_JOB_ID',
     'BUILDKITE_REPO',
