@@ -73,6 +73,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     BUILDKITE_PLUGIN_K8S_RESOURCES_LIMIT_CPU: '',
     BUILDKITE_PLUGIN_K8S_RESOURCES_REQUEST_MEMORY: '',
     BUILDKITE_PLUGIN_K8S_RESOURCES_LIMIT_MEMORY: '',
+    BUILDKITE_PLUGIN_K8S_SERVICE_ACCOUNT_NAME: 'default',
     BUILDKITE_PLUGIN_K8S_WORKDIR: std.join('/', [env.BUILDKITE_BUILD_PATH, buildSubPath]),
     BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFTER_FINISHED: '86400',
   } + agentEnv,
@@ -102,7 +103,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
           secretKeyRef: if env.BUILDKITE_PLUGIN_K8S_DEFAULT_SECRET_NAME != ''
           then {
             name: env.BUILDKITE_PLUGIN_K8S_DEFAULT_SECRET_NAME,
-            key: 'buildkite-agent-token'
+            key: 'buildkite-agent-token',
           }
           else {
             name: env.BUILDKITE_PLUGIN_K8S_SECRET_NAME,
@@ -187,7 +188,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
             { key: 'ssh-key', path: 'ssh-key' },
           ],
         },
-      }]
+      }],
   },
 
   local gitCredentials = {
@@ -303,11 +304,12 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
         labels: labels,
         # Take all the same annotations as the job itself on the pod, but also add the istio inject false annotation
         # Istio gets in the way of many jobs
-        annotations: annotations + {'sidecar.istio.io/inject': 'false'},
+        annotations: annotations { 'sidecar.istio.io/inject': 'false' },
       },
       spec: {
         activeDeadlineSeconds: deadline,
         restartPolicy: 'Never',
+        serviceAccountName: env.BUILDKITE_PLUGIN_K8S_SERVICE_ACCOUNT_NAME,
         initContainers: [
           {
             name: 'bootstrap',
