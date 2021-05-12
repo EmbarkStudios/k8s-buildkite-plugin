@@ -213,6 +213,12 @@ Sets [memory request](https://kubernetes.io/docs/concepts/configuration/manage-c
 
 Sets [memory limit](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) for the build container.
 
+### `service-account-name` (optional, string)
+
+Sets the [service account](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/) for the build container.
+
+Default: `default`
+
 ### `use-agent-node-affinity` (optional, boolean)
 
 If set to `true`, the spawned jobs will use the same [node affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/) and [tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) as the buildkite agent.

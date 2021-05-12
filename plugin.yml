@@ -61,6 +61,8 @@ configuration:
       type: string
     resources-limit-memory:
       type: string
+    service-account-name:
+      type: string
     use-agent-node-affinity:
       type: boolean
     print-resulting-job-spec:
