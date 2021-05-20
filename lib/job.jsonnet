@@ -28,6 +28,8 @@ local allowedEnvs = std.set(
     'BUILDKITE_REBUILT_FROM_BUILD_NUMBER',
     'BUILDKITE_REPO',
     'BUILDKITE_SOURCE',
+    'BUILDKITE_STEP_ID',
+    'BUILDKITE_STEP_KEY',
   ]
 );
 
@@ -155,6 +157,8 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     'buildkite/agent-id': env.BUILDKITE_AGENT_ID,
     'buildkite/agent-name': env.BUILDKITE_AGENT_NAME,
     'buildkite/job-id': env.BUILDKITE_JOB_ID,
+    'buildkite/step-id': env.BUILDKITE_STEP_ID,
+    'buildkite/step-key': env.BUILDKITE_STEP_KEY,
     'job-name': jobName,
   },
 
