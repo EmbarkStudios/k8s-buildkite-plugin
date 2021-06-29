@@ -138,7 +138,10 @@ do
   else
     sleep "$job_status_retry_interval_sec"
     if [[ $timeout -gt 0 ]]; then
-      (( counter -= job_status_retry_interval_sec ))
+      if ! (( counter -= job_status_retry_interval_sec )); then
+        echo "Warning: pod wasn't created before timeout"
+        exit 42
+      fi
     fi
   fi
 done
@@ -200,7 +203,10 @@ else
     else
       sleep "$job_status_retry_interval_sec"
       if [[ $timeout -gt 0 ]]; then
-        (( counter -= job_status_retry_interval_sec ))
+        if ! (( counter -= job_status_retry_interval_sec )); then
+          echo "Warning: never successfully got pod status"
+          exit 42
+        fi
       fi
     fi
   done
