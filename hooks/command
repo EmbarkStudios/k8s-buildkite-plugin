@@ -190,6 +190,9 @@ status=""
 if [[ "$jobstatus" == "Complete" ]] ; then
   echo "success"
   status="0"
+elif kubectl get pod "$pod_name" 2>&1 >/dev/null | grep -q NotFound; then
+  echo "Warning: pod was never created"
+  status="42"
 else
   while true
   do
