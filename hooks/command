@@ -209,6 +209,9 @@ fi
 if [[ -z "$status" ]]; then
   echo "Warning: could not get actual exit code of the job"
   status="42"
+elif [[ "$status" == "null" ]]; then
+  echo "Warning: exit code of job was null"
+  status="42"
 fi
 
 exit "$status"
