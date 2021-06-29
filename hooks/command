@@ -136,6 +136,14 @@ do
   if [[ -n "$pod_name" ]]; then
     break
   else
+    set +e
+    jobstatus=$(kubectl get job "$job_name" -o 'jsonpath={.status.conditions[].type}')
+    set -e
+    if [[ "$jobstatus" == "Failed" ]]; then
+      echo "Warning: job failed to create pod"
+      exit 42
+    fi
+
     sleep "$job_status_retry_interval_sec"
     if [[ $timeout -gt 0 ]]; then
       (( counter -= job_status_retry_interval_sec ))
