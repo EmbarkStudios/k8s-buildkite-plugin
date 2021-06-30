@@ -331,6 +331,12 @@ env:
 - Default: `60`
 - Unit type: integer seconds
 
+### BUILDKITE_PLUGIN_K8S_SKIP_ON_MACOS
+
+- Skips all plugin logic on macOS to allow configuration that runs on multiple platforms
+- Default: `false`
+- Unit type: boolean
+
 ## Contributing
 
 We welcome community contributions to this project.
