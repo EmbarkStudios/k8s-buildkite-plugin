@@ -301,7 +301,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     annotations: annotations,
   },
   spec: {
-    backoffLimit: 2,
+    backoffLimit: std.parseInt(env.BUILDKITE_PLUGIN_K8S_POD_BACKOFF_LIMIT),
     activeDeadlineSeconds: deadline,
     completions: 1,
     ttlSecondsAfterFinished: std.parseInt(env.BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFTER_FINISHED),
