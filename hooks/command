@@ -204,8 +204,8 @@ else
       sleep "$job_status_retry_interval_sec"
       if [[ $timeout -gt 0 ]]; then
         if ! (( counter -= job_status_retry_interval_sec )); then
-          echo "Warning: never successfully got pod status"
-          exit 42
+          echo "Warning: timed out while checking init container status"
+          break;
         fi
       fi
     fi
