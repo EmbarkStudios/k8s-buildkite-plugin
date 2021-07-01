@@ -89,9 +89,10 @@ job_spec="$(jsonnet \
   "${basedir}/lib/job.jsonnet")"
 
 if [[ "$use_agent_node_affinity" == "true" ]]; then
-  for field in affinity tolerations; do
-    buildkite_agent_value="$(kubectl get pod "$(cat /etc/hostname)" -o json | jq ".spec.$field")"
-    job_spec="$(echo "$job_spec" | jq ".spec.template.spec.$field=$buildkite_agent_value")"
+  agent_spec="$(kubectl get pod "$(cat /etc/hostname)" -o json)"
+  for field in affinity tolerations nodeSelector; do
+    agent_value=$(echo "$agent_spec" | jq ".spec.$field")
+    job_spec="$(echo "$job_spec" | jq ".spec.template.spec.$field=$agent_value")"
   done
 fi
 

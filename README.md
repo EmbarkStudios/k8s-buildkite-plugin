@@ -221,7 +221,7 @@ Default: `default`
 
 ### `use-agent-node-affinity` (optional, boolean)
 
-If set to `true`, the spawned jobs will use the same [node affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/) and [tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) as the buildkite agent.
+If set to `true`, the spawned jobs will use the same [node affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/), [tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/), and [nodeSelector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector) as the buildkite agent.
 
 ### `workdir` (optional, string)
 
