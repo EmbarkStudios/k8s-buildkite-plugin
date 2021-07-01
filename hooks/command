@@ -140,7 +140,7 @@ do
     jobstatus=$(kubectl get job "$job_name" -o 'jsonpath={.status.conditions[].type}')
     set -e
     if [[ "$jobstatus" == "Failed" ]]; then
-      echo "Warning: job failed to create pod"
+      echo "Warning: exiting because no pod was found and job status was Failed"
       exit 42
     fi
 
