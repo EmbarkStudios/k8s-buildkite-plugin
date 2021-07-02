@@ -2,8 +2,7 @@
 
 set -euo pipefail
 
-readonly skip_on_macos=${BUILDKITE_PLUGIN_K8S_SKIP_ON_MACOS:-}
-if [[ "$skip_on_macos" == "true" && $OSTYPE == darwin* ]]; then
+if [[ $OSTYPE == darwin* ]]; then
   exit 0
 fi
 

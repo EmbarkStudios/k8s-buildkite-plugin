@@ -2,6 +2,10 @@
 
 set -euo pipefail
 
+if [[ $OSTYPE == darwin* ]]; then
+  exec /bin/bash -c "$BUILDKITE_COMMAND"
+fi
+
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
 
 # Ensure a name is a valid k8s resource name.
@@ -29,11 +33,6 @@ readonly log_complete_timeout_sec="${BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_TIMEOUT_S
 readonly use_agent_node_affinity=${BUILDKITE_PLUGIN_K8S_USE_AGENT_NODE_AFFINITY:-false}
 readonly print_resulting_job_spec=${BUILDKITE_PLUGIN_K8S_PRINT_RESULTING_JOB_SPEC:-false}
 readonly jobs_cleanup_via_plugin=${BUILDKITE_PLUGIN_K8S_JOBS_CLEANUP_VIA_PLUGIN:-}
-readonly skip_on_macos=${BUILDKITE_PLUGIN_K8S_SKIP_ON_MACOS:-}
-
-if [[ "$skip_on_macos" == "true" && $OSTYPE == darwin* ]]; then
-  exec /bin/bash -c "$BUILDKITE_COMMAND"
-fi
 
 bootstrap_container_log_complete_marker_file="$(mktemp)"
 readonly bootstrap_container_log_complete_marker_file
