@@ -190,22 +190,26 @@ status=""
 if [[ "$jobstatus" == "Complete" ]] ; then
   echo "success"
   status="0"
-elif kubectl get pod "$pod_name" 2>&1 >/dev/null | grep -q NotFound; then
-  echo "Warning: pod was never created"
-  status="42"
 else
   while true
   do
     set +e
-    pod_json=$(kubectl get pod "$pod_name" -o json)
-    init_container_status="$(echo "$pod_json" | jq ".status.initContainerStatuses[0].state.terminated.exitCode")"
-    if [[ -n "$init_container_status" && "$init_container_status" != "0" ]]; then
-      echo "Warning: init container failed with exit code $init_container_status, this usually indicates plugin misconfiguration or infrastructure failure"
-      status="$init_container_status"
-    else
-      status="$(echo "$pod_json" | jq ".status.containerStatuses[0].state.terminated.exitCode")"
-    fi
+    pod_json=$(kubectl get pod "$pod_name" -o json 2>&1)
+    get_pod_status=$?
     set -e
+    if [[ "$get_pod_status" -eq 0 ]]; then
+      init_container_status="$(echo "$pod_json" | jq ".status.initContainerStatuses[0].state.terminated.exitCode")"
+      if [[ -n "$init_container_status" && "$init_container_status" != "0" ]]; then
+        echo "Warning: init container failed with exit code $init_container_status, this usually indicates plugin misconfiguration or infrastructure failure"
+        status="$init_container_status"
+      else
+        status="$(echo "$pod_json" | jq ".status.containerStatuses[0].state.terminated.exitCode")"
+      fi
+    elif [[ "$pod_json" == *NotFound* ]]; then
+      echo "Warning: pod not found"
+      status="42"
+    fi
+
     if [[ -n "$status" ]]; then
       break
     else
