@@ -249,7 +249,7 @@ patch: |
 
 If set to `true`, the resulting k8s job spec is printed to the log. This can be useful when debugging.
 
-### `pod-backoff-limit` (optional, integer)
+### `job-backoff-limit` (optional, integer)
 
 Configures [`spec.backoffLimit`](https://kubernetes.io/docs/concepts/workloads/controllers/job/#pod-backoff-failure-policy) to enable retries of job's pod creation.
 Default value: `0`.

@@ -68,7 +68,7 @@ configuration:
     print-resulting-job-spec:
       type: boolean
       default: false
-    pod-backoff-limit:
+    job-backoff-limit:
       type: integer
       default: 0
     job-ttl-seconds-after-finished:
