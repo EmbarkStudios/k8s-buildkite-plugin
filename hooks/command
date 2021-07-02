@@ -139,7 +139,10 @@ do
   else
     sleep "$job_status_retry_interval_sec"
     if [[ $timeout -gt 0 ]]; then
-      (( counter -= job_status_retry_interval_sec ))
+      (( counter -= job_status_retry_interval_sec )) || {
+        echo "Warning: timed out while creating pod"
+        exit 42
+      }
     fi
   fi
 done
@@ -201,7 +204,10 @@ else
     else
       sleep "$job_status_retry_interval_sec"
       if [[ $timeout -gt 0 ]]; then
-        (( counter -= job_status_retry_interval_sec ))
+        (( counter -= job_status_retry_interval_sec )) || {
+          echo "Warning: timed out while checking init container status"
+          break
+        }
       fi
     fi
   done
