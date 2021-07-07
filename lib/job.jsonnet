@@ -78,6 +78,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     BUILDKITE_PLUGIN_K8S_SERVICE_ACCOUNT_NAME: 'default',
     BUILDKITE_PLUGIN_K8S_WORKDIR: std.join('/', [env.BUILDKITE_BUILD_PATH, buildSubPath]),
     BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFTER_FINISHED: '86400',
+    BUILDKITE_PLUGIN_K8S_JOB_BACKOFF_LIMIT: '0',
   } + agentEnv,
 
   local stepEnv =
