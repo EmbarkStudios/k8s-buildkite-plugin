@@ -249,6 +249,11 @@ patch: |
 
 If set to `true`, the resulting k8s job spec is printed to the log. This can be useful when debugging.
 
+### `job-backoff-limit` (optional, integer)
+
+Configures [`spec.backoffLimit`](https://kubernetes.io/docs/concepts/workloads/controllers/job/#pod-backoff-failure-policy) to enable retries of job's pod creation.
+Default value: `0`.
+
 ### `job-ttl-seconds-after-finished` (optional, integer)
 
 Configures [`spec.ttlSecondsAfterFinished`](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) on the k8s job, requires TTL Controller enabled in the cluster, otherwise ignored.

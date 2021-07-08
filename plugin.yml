@@ -68,6 +68,9 @@ configuration:
     print-resulting-job-spec:
       type: boolean
       default: false
+    job-backoff-limit:
+      type: integer
+      default: 0
     job-ttl-seconds-after-finished:
       type: integer
       default: 86400
