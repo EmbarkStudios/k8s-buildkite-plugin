@@ -39,10 +39,10 @@ local numberSuffix(s) =
   local t = std.split(s, '_');
   std.format('%05s', t[std.length(t) - 1]);
 
-local labelChars = std.set(std.stringChars('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.'));
+local labelChars = std.set(std.stringChars('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'));
 local labelValue(s) =
   local sanitizedValue = std.join('', [
-    if std.setMember(c, labelChars) then c else '_'
+    if std.setMember(c, labelChars) then c else ''
     for c in std.stringChars(s)
   ]);
   if std.length(sanitizedValue) < 63 then sanitizedValue else std.substr(sanitizedValue, 0, 63);
