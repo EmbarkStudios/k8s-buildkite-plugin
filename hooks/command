@@ -196,7 +196,6 @@ else
     set +e
     pod_json=$(kubectl get pod "$pod_name" -o json 2>&1)
     get_pod_status=$?
-    set -e
     if [[ "$get_pod_status" -eq 0 ]]; then
       init_container_status="$(echo "$pod_json" | jq ".status.initContainerStatuses[0].state.terminated.exitCode")"
       if [[ -n "$init_container_status" && "$init_container_status" != "0" ]]; then
@@ -208,7 +207,10 @@ else
     elif [[ "$pod_json" == *NotFound* ]]; then
       echo "Warning: pod not found"
       status="42"
+    else
+      echo "$pod_json" >&2
     fi
+    set -e
 
     if [[ -n "$status" ]]; then
       break
