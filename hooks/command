@@ -221,6 +221,11 @@ else
       status="42"
     else
       echo "$pod_json" >&2
+
+      container_status="$(echo "$pod_json" | jq -e ".status.containerStatuses[0].state.terminated.exitCode")"
+      if [[ $? -eq 0 ]]; then
+        status=$container_status
+      fi
     fi
     set -e
 
