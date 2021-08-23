@@ -134,9 +134,21 @@ echo "--- :kubernetes: Running image: ${BUILDKITE_PLUGIN_K8S_IMAGE}"
 counter="$timeout"
 while true
 do
+  exit_status=0
   set +e
-  pod_name=$(kubectl get pod -l "job-name=$job_name" --output=jsonpath="{.items[*].metadata.name}")
+  pod_name=$(kubectl get pod -l "job-name=$job_name" --output=jsonpath="{.items[*].metadata.name}" 2>&1)
+  exit_status=$?
   set -e
+
+  if [[ $exit_status -ne 0 && "$pod_name" == *NotFound* ]]; then
+      set +e
+      jobstatus=$(kubectl get job "$job_name" -o 'jsonpath={.status.conditions[].type}')
+      set -e
+      if [[ "$jobstatus" == "Failed" ]]; then
+        echo "Warning: exiting because no pod was found and job status was Failed"
+        exit 42
+      fi
+  fi
 
   if [[ -n "$pod_name" ]]; then
     break
