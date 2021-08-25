@@ -214,7 +214,9 @@ else
         echo "Warning: init container failed with exit code $init_container_status, this usually indicates plugin misconfiguration or infrastructure failure"
         status="$init_container_status"
       else
-        status="$(echo "$pod_json" | jq ".status.containerStatuses[0].state.terminated.exitCode")"
+        if container_status="$(echo "$pod_json" | jq -e ".status.containerStatuses[0].state.terminated.exitCode")"; then
+          status=$container_status
+        fi
       fi
     elif [[ "$pod_json" == *NotFound* ]]; then
       echo "Warning: pod not found"
