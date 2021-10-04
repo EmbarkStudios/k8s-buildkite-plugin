@@ -1,41 +1,3 @@
-local allowedEnvs = std.set(
-  [
-    'BUILDKITE',
-    'BUILDKITE_AGENT_ACCESS_TOKEN',
-    'BUILDKITE_AGENT_NAME',
-    'BUILDKITE_BRANCH',
-    'BUILDKITE_BUILD_CREATOR',
-    'BUILDKITE_BUILD_CREATOR_EMAIL',
-    'BUILDKITE_BUILD_CREATOR_TEAMS',
-    'BUILDKITE_BUILD_ID',
-    'BUILDKITE_BUILD_NUMBER',
-    'BUILDKITE_BUILD_PATH',
-    'BUILDKITE_BUILD_URL',
-    'BUILDKITE_COMMIT',
-    'BUILDKITE_JOB_ID',
-    'BUILDKITE_MESSAGE',
-    'BUILDKITE_ORGANIZATION_SLUG',
-    'BUILDKITE_PARALLEL_JOB',
-    'BUILDKITE_PARALLEL_JOB_COUNT',
-    'BUILDKITE_PIPELINE_PROVIDER',
-    'BUILDKITE_PIPELINE_SLUG',
-    'BUILDKITE_PULL_REQUEST',
-    'BUILDKITE_PULL_REQUEST_BASE_BRANCH',
-    'BUILDKITE_PULL_REQUEST_REPO',
-    'BUILDKITE_REBUILT_FROM_BUILD_ID',
-    'BUILDKITE_REBUILT_FROM_BUILD_NUMBER',
-    'BUILDKITE_REPO',
-    'BUILDKITE_SOURCE',
-    'BUILDKITE_STEP_ID',
-    'BUILDKITE_STEP_KEY',
-    'BUILDKITE_TAG',
-    'BUILDKITE_TIMEOUT',
-    'BUILDKITE_TRIGGERED_FROM_BUILD_ID',
-    'BUILDKITE_TRIGGERED_FROM_BUILD_NUMBER',
-    'BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG',
-  ]
-);
-
 local identity = function(f) f;
 
 local numberSuffix(s) =
@@ -99,8 +61,8 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     stepEnv +
     [
       { name: f, value: env[f] }
-      for f in std.objectFields(env)
-      if std.setMember(f, allowedEnvs)
+      for f in std.objectFields(agentEnv)
+      if std.startswith('BUILDKITE')
     ] +
     [
       {
