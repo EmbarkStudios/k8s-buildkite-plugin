@@ -256,6 +256,21 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
       args: [env[f] for f in std.sort(std.objectFields(env), numberSuffix) if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_COMMAND_')],
     },
 
+  local initContainers =
+    if env.BUILDKITE_PLUGIN_K8S_INIT_IMAGE == '' then []
+    else [{
+      name: 'bootstrap',
+      image: env.BUILDKITE_PLUGIN_K8S_INIT_IMAGE,
+      args: ['bootstrap', '--experiment=git-mirrors', '--git-mirrors-path=/git-mirrors', '--ssh-keyscan', '--command', 'true'],
+      env: podEnv,
+      envFrom: initSecretEnv,
+      volumeMounts: [
+        { mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' },
+        { mountPath: '/git-mirrors', name: 'git-mirrors' },
+        { mountPath: '/local', name: 'buildkite-agent' },
+      ] + gitCredentials.mount + gitSSH.mount + defaultSecretsMounts.mount,
+    }],
+
   local deadline = std.parseInt(env.BUILDKITE_TIMEOUT) * 60,
 
   apiVersion: 'batch/v1',
@@ -281,20 +296,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
         activeDeadlineSeconds: deadline,
         restartPolicy: 'Never',
         serviceAccountName: env.BUILDKITE_PLUGIN_K8S_SERVICE_ACCOUNT_NAME,
-        initContainers: [
-          {
-            name: 'bootstrap',
-            image: env.BUILDKITE_PLUGIN_K8S_INIT_IMAGE,
-            args: ['bootstrap', '--experiment=git-mirrors', '--git-mirrors-path=/git-mirrors', '--ssh-keyscan', '--command', 'true'],
-            env: podEnv,
-            envFrom: initSecretEnv,
-            volumeMounts: [
-              { mountPath: env.BUILDKITE_BUILD_PATH, name: 'build' },
-              { mountPath: '/git-mirrors', name: 'git-mirrors' },
-              { mountPath: '/local', name: 'buildkite-agent' },
-            ] + gitCredentials.mount + gitSSH.mount + defaultSecretsMounts.mount,
-          },
-        ],
+        initContainers: initContainers,
         containers: [
           {
             name: 'step',

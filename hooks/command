@@ -165,8 +165,10 @@ done
 
 echo "Pod is running: $pod_name"
 
-echo "--- :kubernetes: bootstrap container"
-tail_logs "$pod_name" "bootstrap" "$bootstrap_container_log_complete_marker_file"
+if [[ ! -z "${BUILDKITE_PLUGIN_K8S_INIT_IMAGE}" ]]; then
+    echo "--- :kubernetes: bootstrap container"
+    tail_logs "$pod_name" "bootstrap" "$bootstrap_container_log_complete_marker_file"
+fi
 
 echo "+++ :kubernetes: step container"
 tail_logs "$pod_name" "step" "$step_container_log_complete_marker_file" &
