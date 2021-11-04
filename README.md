@@ -117,7 +117,7 @@ Example: `my-secrets`
 
 ### `init-image` (optional, string)
 
-Override the [job initContainer](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/). A buildkite-agent binary is expected to exist to do the checkout, along with git and ssh. The default is to use a public image based on the Dockerfile in this repository.
+Override the [job initContainer](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/). A buildkite-agent binary is expected to exist to do the checkout, along with git and ssh. The default is to use a public image based on the Dockerfile in this repository. If set to an empty string no init container is used.
 
 Example: `embarkstudios/k8s:1.0.0`
 
