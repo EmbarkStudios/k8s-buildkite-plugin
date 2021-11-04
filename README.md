@@ -75,7 +75,7 @@ Example: `golang:1.12.5`
 
 ### `always-pull` (optional, boolean)
 
-Whether to always pull the latest image before running the command. Sets [imagePullPolicy](https://kubernetes.io/docs/concepts/containers/images/#updating-images) on the container. If `false`, the value `IfNotPresent` is used. 
+Whether to always pull the latest image before running the command. Sets [imagePullPolicy](https://kubernetes.io/docs/concepts/containers/images/#updating-images) on the container. If `false`, the value `IfNotPresent` is used.
 
 Default: `false`
 
@@ -99,7 +99,7 @@ Example: `/my/custom/entrypoint.sh`
 
 ### `environment` (optional, array)
 
-An array of additional environment variables to pass into to the docker container. Items can be specified as `KEY=value`. 
+An array of additional environment variables to pass into to the docker container. Items can be specified as `KEY=value`.
 
 Example: `[ "FOO=bar", "MY_SPECIAL_BUT_PUBLIC_VALUE=kittens" ]`
 
@@ -117,7 +117,7 @@ Example: `my-secrets`
 
 ### `init-image` (optional, string)
 
-Override the [job initContainer](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/). A buildkite-agent binary is expected to exist to do the checkout, along with git and ssh. The default is to use a public image based on the Dockerfile in this repository.
+Override the [job initContainer](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/). A buildkite-agent binary is expected to exist to do the checkout, along with git and ssh. The default is to use a public image based on the Dockerfile in this repository. If set to an empty string no init container is used.
 
 Example: `embarkstudios/k8s:1.0.0`
 
@@ -257,11 +257,11 @@ Default value: `0`.
 ### `job-ttl-seconds-after-finished` (optional, integer)
 
 Configures [`spec.ttlSecondsAfterFinished`](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) on the k8s job, requires TTL Controller enabled in the cluster, otherwise ignored.
-Default value: `86400`.  
+Default value: `86400`.
 
 ### `jobs-cleanup-via-plugin` (optional, boolean)
 
-If set to `true`, the plugin cleans up k8s jobs older than 1 day even if they're still running. 
+If set to `true`, the plugin cleans up k8s jobs older than 1 day even if they're still running.
 Default value: `true`.
 
 If you have [TTL Controller](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) enabled or some other means to cleanup finished jobs, it is recommended to set the value to `false` in order to reduce load on k8s api servers.
