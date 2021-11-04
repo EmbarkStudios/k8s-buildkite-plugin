@@ -62,7 +62,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     [
       { name: f, value: env[f] }
       for f in std.objectFields(agentEnv)
-      if std.startswith('BUILDKITE')
+      if std.startsWith(f, 'BUILDKITE')
     ] +
     [
       {
