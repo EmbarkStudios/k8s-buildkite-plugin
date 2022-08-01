@@ -1,6 +1,7 @@
+---
 name: k8s
-description: Runs your build step as a kubernetes job
-author: https://github.com/dln
+description: Runs Buildkite Steps as Kubernetes Jobs
+author: https://github.com/muhlba91
 requirements:
 - jq
 - jsonnet
@@ -29,8 +30,6 @@ configuration:
       type: [string, array]
     privileged:
       type: boolean
-    secret-name:
-      type: string
     git-credentials-secret-name:
       type: string
     git-credentials-secret-key:
@@ -38,6 +37,8 @@ configuration:
     git-ssh-secret-name:
       type: string
     git-ssh-secret-key:
+      type: string
+    agent-token-secret-name:
       type: string
     agent-token-secret-key:
       type: string

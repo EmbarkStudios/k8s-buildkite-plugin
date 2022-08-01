@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail
+set -eo pipefail
 
 if [[ $OSTYPE == darwin* ]]; then
   exec /bin/bash -c "$BUILDKITE_COMMAND"
@@ -32,7 +32,7 @@ readonly log_complete_retry_interval_sec="${BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_RE
 readonly log_complete_timeout_sec="${BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_TIMEOUT_SEC:-30}"
 readonly use_agent_node_affinity=${BUILDKITE_PLUGIN_K8S_USE_AGENT_NODE_AFFINITY:-false}
 readonly print_resulting_job_spec=${BUILDKITE_PLUGIN_K8S_PRINT_RESULTING_JOB_SPEC:-false}
-readonly jobs_cleanup_via_plugin=${BUILDKITE_PLUGIN_K8S_JOBS_CLEANUP_VIA_PLUGIN:-}
+readonly jobs_cleanup_via_plugin=${BUILDKITE_PLUGIN_K8S_JOBS_CLEANUP_VIA_PLUGIN:-true}
 
 bootstrap_container_log_complete_marker_file="$(mktemp)"
 readonly bootstrap_container_log_complete_marker_file
@@ -136,7 +136,7 @@ while true
 do
   exit_status=0
   set +e
-  pod_name=$(kubectl get pod -l "job-name=$job_name" --output=jsonpath="{.items[*].metadata.name}" 2>&1)
+  pod_name=$(kubectl get pod -l "build/job-name=$job_name" --output=jsonpath="{.items[*].metadata.name}" 2>&1)
   exit_status=$?
   set -e
 

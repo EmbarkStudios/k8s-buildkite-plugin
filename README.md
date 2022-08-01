@@ -1,12 +1,15 @@
 # Kubernetes Buildkite Plugin
 
-[![Build Status](https://badge.buildkite.com/c061bcad854e7a95c03d1baebfab8a01dc25768dab272dd8e5.svg)](https://buildkite.com/embark-studios/k8s-buildkite-plugin)
-[![Contributor Covenant](https://img.shields.io/badge/contributor%20covenant-v1.4%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
-[![Embark](https://img.shields.io/badge/embark-open%20source-blueviolet.svg)](https://github.com/EmbarkStudios)
+[![](https://img.shields.io/github/license/muhlba91/buildkite-plugin-k8s?style=for-the-badge)](LICENSE)
+[![](https://img.shields.io/github/workflow/status/muhlba91/buildkite-plugin-k8s/Pipeline?style=for-the-badge)](https://github.com/muhlba91/buildkite-plugin-k8s/actions)
+[![](https://img.shields.io/github/release-date/muhlba91/buildkite-plugin-k8s?style=for-the-badge)](https://github.com/muhlba91/buildkite-plugin-k8s/releases)
+<a href="https://www.buymeacoffee.com/muhlba91" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="28" width="150"></a>
 
-An opinionated [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pipeline steps as [Kubernetes Jobs](https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/) on a cluster with minimal effort.
+An opinionated [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) for running pipeline steps as [Kubernetes Jobs](https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/).
 
-The plugin tries to stay reasonably compatible with the [Docker plugin](https://github.com/buildkite-plugins/docker-buildkite-plugin) to make it easy to change pipelines to run on a cluster. It also takes lots of inspiration from the [kustomize-job-buildkite-plugin](https://github.com/MYOB-Technology/kustomize-job-buildkite-plugin).
+The plugin is based on the work of the [EmabrkStudios/k8s-buildkite-plugin](https://github.com/EmbarkStudios/k8s-buildkite-plugin).
+
+---
 
 ## Quirks & Issues
 
@@ -16,13 +19,14 @@ The build step container will have the `buildkite-agent` binary mounted at `/usr
 
 This behavior may be disabled by setting `mount-buildkite-agent: false` in the pipeline.
 
-> ** Note: ** The user is responsible for making sure the container specified in `image` contains any external dependencies required by the otherwise statically linked buildkite-agent binary. This includes certificate authorities, and possibly git and ssh depending on how it's being used.
+> **Note:** The user is responsible for making sure the container specified in `image` contains any external dependencies required by the otherwise statically linked buildkite-agent binary. This includes certificate authorities, and possibly git and ssh depending on how it's being used.
 
 ### Build artifacts
 
 As the build-agent doesn't run in the same container as the actual commands, automatic upload of artifacts specified in `artifact_paths` won't work.
 A workaround to this is to run `buildkite-agent artifact upload ...` as a command in the step itself.
 
+---
 
 ## Example
 
@@ -30,7 +34,7 @@ A workaround to this is to run `buildkite-agent artifact upload ...` as a comman
 steps:
   - command: "echo 'Hello, World!'"
     plugins:
-      - EmbarkStudios/k8s:
+      - muhlba91/k8s:
           image: alpine
 ```
 
@@ -39,10 +43,10 @@ If you want to control how your command is passed to the container, you can use 
 ```yaml
 steps:
   - plugins:
-      - EmbarkStudios/k8s:
-          image: "embarkstudios/fortune"
+      - muhlna91/k8s:
+          image: alpine
           always-pull: true
-          command: ["startrek"]
+          command: ["echo", "command"]
 ```
 
 You can pass in additional environment variables, including values from a [Secret](https://kubernetes.io/docs/concepts/configuration/secret/):
@@ -53,13 +57,15 @@ steps:
       - "yarn install"
       - "yarn run test"
     plugins:
-      - EmbarkStudios/k8s:
-          image: "node:7"
+      - muhlba91/k8s:
+          image: "node:16"
           environment:
-            - "MY_SPECIAL_BUT_PUBLIC_VALUE=kittens"
+            - "PUBLIC_ENVIRONMENT_VARIABLE=value"
           environment-from-secret:
-            - "kitten-secrets"
+            - "environment-secrets"
 ```
+
+---
 
 ## Configuration
 
@@ -69,7 +75,7 @@ steps:
 
 The name of the container image to use.
 
-Example: `golang:1.12.5`
+Example: `node:16`
 
 ### Optional
 
@@ -119,19 +125,21 @@ Example: `my-secrets`
 
 Override the [job initContainer](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/). A buildkite-agent binary is expected to exist to do the checkout, along with git and ssh. The default is to use a public image based on the Dockerfile in this repository. If set to an empty string no init container is used.
 
-Example: `embarkstudios/k8s:1.0.0`
+Example: `muhlba91/buildkite-agent-k8s:<VERSION>`
 
 ### `privileged` (optional, boolean)
 
 Wether to run the container in [privileged mode](https://kubernetes.io/docs/concepts/workloads/pods/pod/#privileged-mode-for-pod-containers).
 
-### `secret-name` (optional, string)
+### `agent-token-secret-name` (optional, string)
 
-The name of the secret containing the buildkite agent token and, optionally, ssh or git credentials used for bootstrapping in the init container.
+The name of the secret containing the buildkite agent token used for bootstrapping in the init container.
 
 ### `agent-token-secret-key` (optional, string)
 
-The key of the secret value containing the buildkite agent token, within the secret specified in `secret-name`.
+The key of the secret value containing the buildkite agent token, within the secret specified in `agent-token-secret-name`.
+
+Default: `buildkite-agent-token`
 
 ### `git-credentials-secret-name` (optional, string)
 
@@ -143,6 +151,8 @@ The key of the secret value containing the git credentials used for checking out
 
 The contents of this file will be used as the [git credential store](https://git-scm.com/docs/git-credential-store) file.
 
+Default: `git-credentials`
+
 ### `git-ssh-secret-name` (optional, string)
 
 The name of the secret containing the git credentials used for checking out source code with SSH.
@@ -150,6 +160,8 @@ The name of the secret containing the git credentials used for checking out sour
 ### `git-ssh-secret-key` (optional, string)
 
 The key of the secret value containing the SSH key used when checking out source code with SSH as transport.
+
+Default: `ssh-key`
 
 ### `mount-hostpath` (optional, string or array)
 
@@ -167,15 +179,11 @@ Example: `my-secret:/my/secret`
 
 ### `default-secret-name` (optional, string)
 
-The name of the secret containing the buildkite agent token, ssh and git credentials used for bootstrapping in the init container. The key names of the secret are not configurable and as such must contain the following:
-```yaml
-  buildkite-agent-token: <token>
-  git-credentials: <credentials>
-  ssh-key: <sshkey>
-```
+The name of the secret containing the buildkite agent token, ssh and git credentials used for bootstrapping in the init container.
+The key names of the secret are configured as with separate secrets.
 This is useful if you have control over secret creation and would like to avoid explicitly providing the key and secret names.
 
-Example: `buildkite-secret`
+Example: `buildkite-secrets`
 
 ### `build-path-host-path` (optional, string)
 
@@ -232,6 +240,7 @@ Override the working directory to run the command in, inside the container. The 
 (Advanced / hack use). Provide a [jsonnet](https://jsonnet.org/) function to transform the resulting job manifest.
 
 Example:
+
 ```
 patch: |
   function(job) job {
@@ -273,84 +282,14 @@ Default value: `true`.
 
 If you have TTL controller or https://github.com/lwolf/kube-cleanup-operator running, it is highly recommended to set the value to `false` to reduce load on k8s api servers.
 
-## Low Level Configuration via Environment Variables
-
-Some of the plugin options can be configured via environment variables as following ([also see Buildkite docs](https://buildkite.com/docs/pipelines/environment-variables#defining-your-own)):
-
-```yaml
-env:
-  BUILDKITE_PLUGIN_K8S_JOB_APPLY_RETRY_INTERVAL_SEC: "10"
-```
-
-### BUILDKITE_PLUGIN_K8S_JOB_APPLY_RETRY_INTERVAL_SEC
-
-- Configures the interval between attempts to schedule the k8s job
-- Default: `5`
-- Unit type: integer seconds
-
-### BUILDKITE_PLUGIN_K8S_JOB_APPLY_TIMEOUT_SEC
-
-- Configures the total time limit across attempts to schedule the k8s job
-- Default: `120`
-- Unit type: integer seconds
-
-### BUILDKITE_PLUGIN_K8S_JOB_STATUS_RETRY_INTERVAL_SEC
-
-- Configures the interval between attempts to get k8s job status
-- Default: `5`
-- Unit type: integer seconds
-
-### BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_RETRY_INTERVAL_SEC
-
-- Configures the interval between attempts to verify that log streaming has ended
-- Default: `1`
-- Unit type: integer seconds
-
-### BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_TIMEOUT_SEC
-
-- Configures the total time limit across attempts to verify that log streaming has ended
-- Default: `30`
-- Unit type: integer seconds
-
-### BUILDKITE_PLUGIN_K8S_LOG_RETRY_INTERVAL_SEC
-
-- Configures the interval between attempts to stream job logs
-- Default: `3`
-- Unit type: integer seconds
-
-### BUILDKITE_PLUGIN_K8S_LOG_ATTEMPT_TIMEOUT_SEC
-
-- Configures time limit for a _single_ plugin attempt to stream job logs
-- Default: `5`
-- Unit type: integer seconds
-
-### BUILDKITE_PLUGIN_K8S_JOB_CLEANUP_RETRY_INTERVAL_SEC
-
-- Configures the interval between attempts to cleanup finished jobs
-- Default: `5`
-- Unit type: integer seconds
-
-### BUILDKITE_PLUGIN_K8S_JOB_CLEANUP_TIMEOUT_SEC
-
-- Configures the total time limit across attempts to cleanup finished jobs
-- Default: `60`
-- Unit type: integer seconds
+---
 
 ## Contributing
 
 We welcome community contributions to this project.
 
-Please read our [Contributor Guide](CONTRIBUTING.md) for more information on how to get started.
+## Supporting
 
-## License
+If you enjoy the application and want to support my efforts, please feel free to buy me a coffe. :)
 
-Licensed under either of
-
-* Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
-* MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
-
-at your option.
-
-### Contribution
-
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
+<a href="https://www.buymeacoffee.com/muhlba91" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="75" width="300"></a>

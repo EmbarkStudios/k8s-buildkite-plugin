@@ -1,0 +1,12 @@
+{
+  "releaseCommitMessageFormat": "chore(release): release {{currentTag}} [skip ci] [release]",
+  "tagPrefix": "v",
+  "bumpFiles": [
+    {
+        "filename": "lib/job.jsonnet",
+        "updater": ".github/workflows/standard-version-updater.js"
+    }
+  ],
+  "packageFiles": [],
+  "header": "# Changelog\n\n"
+}
