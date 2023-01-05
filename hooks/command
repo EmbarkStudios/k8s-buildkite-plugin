@@ -100,9 +100,9 @@ if [[ "$use_agent_node_affinity" == "true" ]]; then
   done
 fi
 
-if [[ "$print_resulting_job_spec" == "true" ]]; then
-  echo -e "Resulting k8s job spec:\n$job_spec"
-fi
+# if [[ "$print_resulting_job_spec" == "true" ]]; then
+echo -e "Resulting k8s job spec:\n$job_spec"
+# fi
 
 readonly job_apply_start_time="$SECONDS"
 job_apply_exit_code=""
