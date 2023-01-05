@@ -298,14 +298,11 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
         restartPolicy: 'Never',
         serviceAccountName: env.BUILDKITE_PLUGIN_K8S_SERVICE_ACCOUNT_NAME,
         initContainers: initContainers,
-        // imagePullSecrets: [
-        //   (if env.BUILDKITE_PLUGIN_K8S_IMAGE_PULL_SECRET != '' then
-        //     { name: env.BUILDKITE_PLUGIN_K8S_IMAGE_PULL_SECRET }
-        //     else {}
-        //   ),
-        // ],
         imagePullSecrets: [
-          { name: 'agent-pull-secret'},
+          (if env.BUILDKITE_PLUGIN_K8S_IMAGE_PULL_SECRET != '' then
+            { name: env.BUILDKITE_PLUGIN_K8S_IMAGE_PULL_SECRET }
+            else {}
+          ),
         ],
         containers: [
           {
