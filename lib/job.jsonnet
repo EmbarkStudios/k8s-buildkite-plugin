@@ -277,7 +277,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
   local imagePullSecrets = 
     if env.BUILDKITE_PLUGIN_K8S_IMAGE_PULL_SECRET == '' then []
     else [{
-      imagePullSecrets: [
+      [
         {name: env.BUILDKITE_PLUGIN_K8S_IMAGE_PULL_SECRET},
       ],
     },],
