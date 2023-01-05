@@ -274,6 +274,14 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
 
   local deadline = std.parseInt(env.BUILDKITE_TIMEOUT) * 60,
 
+  local imagePullSecrets = 
+    if env.BUILDKITE_PLUGIN_K8S_IMAGE_PULL_SECRET == '' then []
+    else [{
+      imagePullSecrets: [
+        {name: env.BUILDKITE_PLUGIN_K8S_IMAGE_PULL_SECRET},
+      ],
+    },],
+
   apiVersion: 'batch/v1',
   kind: 'Job',
   metadata: {
@@ -298,12 +306,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
         restartPolicy: 'Never',
         serviceAccountName: env.BUILDKITE_PLUGIN_K8S_SERVICE_ACCOUNT_NAME,
         initContainers: initContainers,
-        imagePullSecrets: [
-          (if env.BUILDKITE_PLUGIN_K8S_IMAGE_PULL_SECRET != '' then
-            { name: env.BUILDKITE_PLUGIN_K8S_IMAGE_PULL_SECRET }
-            else {}
-          ),
-        ],
+        imagePullSecrets: imagePullSecrets,
         containers: [
           {
             name: 'step',
