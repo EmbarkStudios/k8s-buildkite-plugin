@@ -79,6 +79,11 @@ Whether to always pull the latest image before running the command. Sets [imageP
 
 Default: `false`
 
+### ``image-pull-secret`` (optional, string)
+
+The name of the secret that holds the credentials for a remote container registry.
+
+
 ### `command` (optional, array)
 
 Sets the command for the container. Useful if the container image has an entrypoint, but requires extra arguments.
