@@ -20,14 +20,29 @@ steps:
     plugins:
       - EmbarkStudios/k8s#1.2.6:
           image: gcr.io/kaniko-project/executor:latest
+          mount-buildkite-agent: false
           default-secret-name: buildkite-k8s-plugin
           use-agent-node-affinity: true
           command:
             - --destination=embarkstudios/k8s-buildkite-agent
             - --context=.
             - --reproducible
-            - --cache=true
-            - --cache-repo=kaniko-cache.buildkite.svc.cluster.local/kaniko/cache
-            - --cache-dir=$BUILDKITE_BUILD_PATH/_kaniko_cache
+          mount-secret:
+            - docker-hub-credentials:/kaniko/.docker
+  - name: Build and publish k8s-buildkite-agent CI-debug container image
+    branches: '!master'
+    agents:
+      queue: monorepo-ci
+      os: linux
+    plugins:
+      - EmbarkStudios/k8s#1.2.6:
+          image: gcr.io/kaniko-project/executor:latest
+          mount-buildkite-agent: false
+          default-secret-name: buildkite-k8s-plugin
+          use-agent-node-affinity: true
+          command:
+            - --destination=embarkstudios/k8s-buildkite-agent:ci-debug
+            - --context=.
+            - --reproducible
           mount-secret:
             - docker-hub-credentials:/kaniko/.docker
