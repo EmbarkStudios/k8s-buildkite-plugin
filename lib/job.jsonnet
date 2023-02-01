@@ -28,7 +28,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_KEY: '',
     BUILDKITE_PLUGIN_K8S_GIT_SSH_SECRET_NAME: '',
     BUILDKITE_PLUGIN_K8S_AGENT_TOKEN_SECRET_KEY: 'buildkite-agent-token',
-    BUILDKITE_PLUGIN_K8S_INIT_IMAGE: 'embarkstudios/k8s-buildkite-agent@sha256:3c010d09915f3b39c2f8324af5f0aaf910a643e7d63607ee8d49653931b8b167',
+    BUILDKITE_PLUGIN_K8S_INIT_IMAGE: 'embarkstudios/k8s-buildkite-agent@sha256:1d88791315ed6b0b49a64055bc71c5a9a0b1953e387f99d25299ed06ccea5dbd',
     BUILDKITE_PLUGIN_K8S_ALWAYS_PULL: false,
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_HOST_PATH: '',
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_PVC: '',
