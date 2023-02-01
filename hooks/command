@@ -39,6 +39,7 @@ readonly bootstrap_container_log_complete_marker_file
 step_container_log_complete_marker_file="$(mktemp)"
 readonly step_container_log_complete_marker_file
 
+# shellcheck disable=2317 # Shellcheck doesn't understand traps
 function cleanup {
   rm -f "$bootstrap_container_log_complete_marker_file" "$step_container_log_complete_marker_file"
 
