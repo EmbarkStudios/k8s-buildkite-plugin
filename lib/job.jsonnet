@@ -114,7 +114,6 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     'build/commit': env.BUILDKITE_COMMIT,
     'build/creator': env.BUILDKITE_BUILD_CREATOR,
     'build/creator-email': env.BUILDKITE_BUILD_CREATOR_EMAIL,
-    'build/creator-teams': env.BUILDKITE_BUILD_CREATOR_TEAMS,
     'build/id': env.BUILDKITE_BUILD_ID,
     'build/url': env.BUILDKITE_BUILD_URL,
     'build/number': env.BUILDKITE_BUILD_NUMBER,
@@ -127,6 +126,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     'buildkite/step-id': env.BUILDKITE_STEP_ID,
     'buildkite/step-key': env.BUILDKITE_STEP_KEY,
     'job-name': jobName,
+	[if std.objectHas(env, "BUILDKITE_BUILD_CREATOR_TEAMS") then 'build/creator-teams' else null]: env.BUILDKITE_BUILD_CREATOR_TEAMS,
   },
 
   local buildVolume =
