@@ -88,7 +88,9 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
       for f in std.sort(std.objectFields(env), numberSuffix)
       if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT_')
          && !std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT_FROM_SECRET')
-    ],
+    ] + [
+	  'BUILDKITE_PLUGIN_K8S_IS_JOB': 'true',
+	],
 
   local secretEnv =
     [

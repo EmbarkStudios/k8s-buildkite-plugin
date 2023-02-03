@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+if [[ -v "BUILDKITE_PLUGIN_K8S_IS_JOB" ]]; then
+	# do not recurse
+	exit 0
+fi
+
 if [[ $OSTYPE == darwin* ]]; then
   exec /bin/bash -c "$BUILDKITE_COMMAND"
 fi
