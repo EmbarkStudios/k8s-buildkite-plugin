@@ -73,6 +73,8 @@ function tail_logs {
     if [[ -n "$log_snapshot" ]]; then
       break
     fi
+	echo "failed reading with timeout - retrying without timeout + time"
+	time kubectl logs --limit-bytes "1024" "pod/$pod_name" --container "$container_name"
     sleep "$log_loop_retry_interval_sec"
   done
 
