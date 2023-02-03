@@ -7,7 +7,7 @@ steps:
       - echo "Running shellcheck"
       - shellcheck hooks/*
     plugins:
-      - EmbarkStudios/k8s#44b05b2ef952c75809f7603e1b8607f57ac194ea:
+      - EmbarkStudios/k8s#99fa884:
           image: koalaman/shellcheck-alpine
           default-secret-name: buildkite-k8s-plugin
           use-agent-node-affinity: true
@@ -35,7 +35,7 @@ steps:
       queue: monorepo-ci
       os: linux
     plugins:
-      - EmbarkStudios/k8s#44b05b2ef952c75809f7603e1b8607f57ac194ea:
+      - EmbarkStudios/k8s#99fa884:
           image: gcr.io/kaniko-project/executor:latest
           mount-buildkite-agent: false
           default-secret-name: buildkite-k8s-plugin
