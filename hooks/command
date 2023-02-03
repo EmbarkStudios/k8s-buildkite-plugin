@@ -64,6 +64,7 @@ function tail_logs {
   local log_snapshot=""
   # Once logs are not empty we start attempting to stream them.
   # Keep looping otherwise since empty output means that there is no useful log to display so we're not losing information by looping.
+  echo "Polling for pod to start"
   while true;
   do
     set +e
@@ -75,15 +76,17 @@ function tail_logs {
     sleep "$log_loop_retry_interval_sec"
   done
 
+  echo "Starting to tail logs..."
   # Run kubectl logs --follow in a loop since it can fail:
   #   1) It can fail due to pod not being initialized yet: "Error from server (BadRequest): container "step" in pod "somepod" is waiting to start: PodInitializing"
   #   2) It can fail mid-streaming, in this case we unfortunately will display logs multiple times (partially).
   #   3) It can hang not providing any result, that's why we check not only exit code but also contents in the loop above.
-  while ! kubectl logs --follow "pod/$pod_name" --container "$container_name" 2>/dev/null;
+  while ! kubectl logs --follow "pod/$pod_name" --container "$container_name";
   do
     sleep "$log_loop_retry_interval_sec"
   done
 
+  echo "Finished tailing logs..."
   echo "0" > "$log_completion_marker_file"
 }
 
