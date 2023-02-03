@@ -87,7 +87,10 @@ echo "--- :kubernetes: Starting Kubernetes Job"
 export patchFunc=${BUILDKITE_PLUGIN_K8S_PATCH:-"function(f) f"}
 
 ls -al "${BUILDKITE_ENV_FILE}"
+whoami
+echo "$USER"
 file "${BUILDKITE_ENV_FILE}"
+
 job_spec="$(jsonnet \
   --tla-str "jobName=${job_name}" \
   --tla-str-file "stepEnvFile=${BUILDKITE_ENV_FILE}" \
