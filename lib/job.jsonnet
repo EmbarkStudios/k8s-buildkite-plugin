@@ -30,6 +30,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     BUILDKITE_PLUGIN_K8S_AGENT_TOKEN_SECRET_KEY: 'buildkite-agent-token',
     BUILDKITE_PLUGIN_K8S_INIT_IMAGE: 'embarkstudios/k8s-buildkite-agent@sha256:1d88791315ed6b0b49a64055bc71c5a9a0b1953e387f99d25299ed06ccea5dbd',
     BUILDKITE_PLUGIN_K8S_ALWAYS_PULL: false,
+    BUILDKITE_PLUGIN_K8S_IMAGE_PULL_SECRET: '',
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_HOST_PATH: '',
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_PVC: '',
     BUILDKITE_PLUGIN_K8S_GIT_MIRRORS_HOST_PATH: '',
@@ -273,6 +274,12 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
 
   local deadline = std.parseInt(env.BUILDKITE_TIMEOUT) * 60,
 
+  local imagePullSecrets = 
+    if env.BUILDKITE_PLUGIN_K8S_IMAGE_PULL_SECRET == '' then []
+    else [
+        {name: env.BUILDKITE_PLUGIN_K8S_IMAGE_PULL_SECRET},
+    ],
+
   apiVersion: 'batch/v1',
   kind: 'Job',
   metadata: {
@@ -297,6 +304,8 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
         restartPolicy: 'Never',
         serviceAccountName: env.BUILDKITE_PLUGIN_K8S_SERVICE_ACCOUNT_NAME,
         initContainers: initContainers,
+        imagePullSecrets: imagePullSecrets,
+
         containers: [
           {
             name: 'step',

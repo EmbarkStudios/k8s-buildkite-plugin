@@ -9,6 +9,8 @@ configuration:
   properties:
     image:
       type: string
+    image-pull-secret:
+      type: string
     always-pull:
       type: boolean
     command:
