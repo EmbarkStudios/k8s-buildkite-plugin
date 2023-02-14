@@ -171,7 +171,8 @@ done
 
 echo "Pod is running: $pod_name"
 
-if [[ -n "${BUILDKITE_PLUGIN_K8S_INIT_IMAGE}" ]]; then
+# not set or not empty - "" disables
+if [[ ! -v "BUILDKITE_PLUGIN_K8S_INIT_IMAGE" || -n "${BUILDKITE_PLUGIN_K8S_INIT_IMAGE}" ]]; then
     echo "--- :kubernetes: bootstrap container"
     tail_logs "$pod_name" "bootstrap" "$bootstrap_container_log_complete_marker_file"
 fi
