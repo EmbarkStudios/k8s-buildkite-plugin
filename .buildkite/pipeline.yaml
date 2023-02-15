@@ -11,6 +11,18 @@ steps:
           image: koalaman/shellcheck-alpine
           default-secret-name: buildkite-k8s-plugin
           use-agent-node-affinity: true
+  - name: shellcheck self-test
+    agents:
+      queue: monorepo-ci
+      os: linux
+    command:
+      - echo "Running shellcheck"
+      - shellcheck hooks/*
+    plugins:
+      - EmbarkStudios/k8s#${BUILDKITE_COMMIT}:
+          image: koalaman/shellcheck-alpine
+          default-secret-name: buildkite-k8s-plugin
+          use-agent-node-affinity: true
   - wait
   - name: Build and publish k8s-buildkite-agent container image
     branches: 'master'
