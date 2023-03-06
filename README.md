@@ -61,6 +61,20 @@ steps:
             - "kitten-secrets"
 ```
 
+Using External Secrets
+```yaml
+steps:
+  - command:
+      - az login -u $(< /externalsecrets/azuser) -p $(< /externalsecrets/azpassword)
+    plugins:
+      - EmbarkStudios/k8s:
+          image: mcr.microsoft.com/azure-cli
+          secret-store: vault-external-store
+          external-secrets:
+          - "azuser:secret/azure:azure-user"
+          - "azpassword:secret/azure:azure-password"
+```
+
 ## Configuration
 
 ### Required
@@ -182,6 +196,37 @@ This is useful if you have control over secret creation and would like to avoid 
 
 Example: `buildkite-secret`
 
+### `external-secrets` (optional, string or array)
+
+Mount one or many secrets as a directory inside the container from an external source using [ExternalSecrets](https://external-secrets.io/v0.7.2/). Must be in the form `secretKey:externalProperty:externalKey`. All secrets described are mounted to the container in the directory `/externalsecrets`.
+
+`secret-store` or `cluster-store` must also be defined to specify what existing SecretStore to pull data from. Only one can be defined.
+
+Example
+```yaml
+secret-store: vault-backend
+external-secrets:
+- "ciPassword:secret/dev/ci:ci-password"
+- "ciUser:secret/dev/ci:ci-user"
+```
+
+Will create an ExternalSecret resource pulling from the vault-backend Secret Store, which will create a secret with keys `ciPassword` and `ciUser` using the values from the `secret/dev/ci` properties and `ci-password` and `ci-user` keys.
+
+**This has only been tested with Vault, other keystores may or may not function as expected**
+
+### `secret-store` (optional, string)
+
+Describes the SecretStore to pull ExternalSecrets from. 
+
+Must be used with the ``external-secrets`` argument and cannot be used with the `cluster-store` argument
+
+### `cluster-store` (optional, string)
+
+Describes the ClusterStore to pull ExternalSecrets from. 
+
+Must be used with the ``external-secrets`` argument and cannot be used with the ``secret-store`` argument
+
+
 ### `build-path-host-path` (optional, string)
 
 Optionally mount a [host path](https://kubernetes.io/docs/concepts/storage/volumes/#hostpath) to be used as base directory for buildkite builds. This allows local caching and incremental builds using fast local storage.
@@ -253,6 +298,10 @@ patch: |
 ### `print-resulting-job-spec` (optional, boolean)
 
 If set to `true`, the resulting k8s job spec is printed to the log. This can be useful when debugging.
+
+### `print-resulting-secret-spec` (optional, boolean)
+
+If exeternal secrets are being used, will print the secret spec to the log. This can be useful when debugging.
 
 ### `job-backoff-limit` (optional, integer)
 

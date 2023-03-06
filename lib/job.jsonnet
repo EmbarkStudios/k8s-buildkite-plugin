@@ -203,7 +203,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
       }],
   },
 
-  local hostPathMount = {
+  local hostPathMount = { 
     local cfg =
       std.mapWithIndex(
         function(i, v) ['hostpath-' + i] + v,
@@ -231,15 +231,35 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
       if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_MOUNT_SECRET')
          && env[f] != ''
     ],
+    # Check if ExternalSecrets Exists
+    # if anything starting with BUILDKITE_PLUGIN_K8S_EXTERNAL_SECERT != ''
+    # Then there is an external secret
     mount: [
       { name: c[0], mountPath: c[1] }
-      for c in cfg
+      for c in cfg 
     ],
     volume: [
       { name: c[0], secret: { secretName: c[0], defaultMode: 256 } }
-      for c in cfg
-    ],
+      for c in cfg 
+    ]
   },
+
+  local externalSecrets = {
+    local cfg = [
+      env[f]
+      for f in std.objectFields(env)
+      if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_EXTERNAL_SECRETS')
+        && env[f] != ''
+    ],
+
+    mount: if std.length(cfg) > 0 then [
+      { name: 'externalsecrets', mountPath: '/externalsecrets'}
+    ] else [],
+    volume: if std.length(cfg) > 0 then [
+      { name: 'externalsecrets', secret: {secretName: jobName, defaultMode: 256},}
+    ] else [],
+  },
+
 
   local agentMount =
     if env.BUILDKITE_PLUGIN_K8S_MOUNT_BUILDKITE_AGENT == 'false'
@@ -340,7 +360,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
               { mountPath: env.BUILDKITE_PLUGIN_K8S_WORKDIR, name: 'build', subPath: buildSubPath },
               { mountPath: '/build', name: 'build', subPath: buildSubPath },
               { mountPath: '/git-mirrors', name: 'git-mirrors' },
-            ] + secretMount.mount + hostPathMount.mount + agentMount,
+            ] + secretMount.mount + externalSecrets.mount + hostPathMount.mount + agentMount,
             workingDir: '/build',
           } + commandArgs,
         ],
@@ -348,7 +368,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
           { name: 'build' } + buildVolume,
           { name: 'git-mirrors' } + gitMirrorsVolume,
           { name: 'buildkite-agent', emptyDir: {} },
-        ] + gitCredentials.volume + gitSSH.volume + secretMount.volume + hostPathMount.volume + defaultSecretsMounts.volume,
+        ] + gitCredentials.volume + gitSSH.volume + secretMount.volume + externalSecrets.volume + hostPathMount.volume + defaultSecretsMounts.volume,
       },
     },
   },
