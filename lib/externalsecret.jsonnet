@@ -49,7 +49,6 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
             kind: storeType,
         },
         target: {
-            # try to find a way for this to not be a static name
             name: jobName,
         } 
     }+ secretsData,
