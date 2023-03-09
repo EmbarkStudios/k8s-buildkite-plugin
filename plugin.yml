@@ -51,6 +51,9 @@ configuration:
       type: string
     external-secrets:
       type: [string,array]
+    external-secrets-mount-path:
+      type: string
+      default: "/externalsecrets"
     build-path-host-path:
       type: string
     build-path-pvc:
