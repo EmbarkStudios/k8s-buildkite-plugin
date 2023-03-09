@@ -51,7 +51,7 @@ configuration:
       type: string
     external-secrets:
       type: [string,array]
-    external-secrets-mount-path:
+    mount-path-external-secrets:
       type: string
       default: "/externalsecrets"
     build-path-host-path:

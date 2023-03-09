@@ -71,8 +71,8 @@ steps:
           image: mcr.microsoft.com/azure-cli
           secret-store: vault-external-store
           external-secrets:
-          - "/external-secrets:azuser:secret/azure:azure-user"
-          - "/external-secrets:azpassword:secret/azure:azure-password"
+          - "azuser:secret/azure:azure-user"
+          - "azpassword:secret/azure:azure-password"
 ```
 
 ## Configuration
