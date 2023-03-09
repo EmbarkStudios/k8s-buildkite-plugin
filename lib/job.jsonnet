@@ -31,6 +31,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     BUILDKITE_PLUGIN_K8S_INIT_IMAGE: 'embarkstudios/k8s-buildkite-agent@sha256:1d88791315ed6b0b49a64055bc71c5a9a0b1953e387f99d25299ed06ccea5dbd',
     BUILDKITE_PLUGIN_K8S_ALWAYS_PULL: false,
     BUILDKITE_PLUGIN_K8S_IMAGE_PULL_SECRET: '',
+    BUILDKITE_PLUGIN_K8S_MOUNT_PATH_EXTERNAL_SECRETS: "/externalsecrets",
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_HOST_PATH: '',
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_PVC: '',
     BUILDKITE_PLUGIN_K8S_GIT_MIRRORS_HOST_PATH: '',
@@ -231,9 +232,6 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
       if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_MOUNT_SECRET')
          && env[f] != ''
     ],
-    # Check if ExternalSecrets Exists
-    # if anything starting with BUILDKITE_PLUGIN_K8S_EXTERNAL_SECERT != ''
-    # Then there is an external secret
     mount: [
       { name: c[0], mountPath: c[1] }
       for c in cfg 
@@ -253,7 +251,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     ],
 
     mount: if std.length(cfg) > 0 then [
-      { name: 'externalsecrets', mountPath: '/externalsecrets'}
+      { name: 'externalsecrets', mountPath: env.BUILDKITE_PLUGIN_K8S_MOUNT_PATH_EXTERNAL_SECRETS}
     ] else [],
     volume: if std.length(cfg) > 0 then [
       { name: 'externalsecrets', secret: {secretName: jobName, defaultMode: 256},}

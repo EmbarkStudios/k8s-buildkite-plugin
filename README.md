@@ -198,9 +198,10 @@ Example: `buildkite-secret`
 
 ### `external-secrets` (optional, string or array)
 
-Mount one or many secrets as a directory inside the container from an external source using [ExternalSecrets](https://external-secrets.io/v0.7.2/). Must be in the form `secretKey:externalProperty:externalKey`. All secrets described are mounted to the container in the directory `/externalsecrets`.
+Mount one or many secrets as a directory inside the container from an external source using [ExternalSecrets](https://external-secrets.io/v0.7.2/). Must be in the form `secretKey:externalProperty:externalKey`.
 
-`secret-store` or `cluster-store` must also be defined to specify what existing SecretStore to pull data from. Only one can be defined.
+`external-secrets-mount-path` can be set to change where the secrets are mounted, but they must all be mounted to the same location.
+`secret-store` or `cluster-store` must be defined to specify what existing SecretStore to pull data from. Only one can be defined.
 
 Example
 ```yaml
@@ -226,6 +227,11 @@ Describes the ClusterStore to pull ExternalSecrets from.
 
 Must be used with the ``external-secrets`` argument and cannot be used with the ``secret-store`` argument
 
+### `external-secrets-mount-path` (optional,string)
+
+Sets the mount path of the external secrets 
+
+Default: ``/externalsecrets``
 
 ### `build-path-host-path` (optional, string)
 
