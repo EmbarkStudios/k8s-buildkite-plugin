@@ -227,7 +227,7 @@ Describes the ClusterStore to pull ExternalSecrets from.
 
 Must be used with the ``external-secrets`` argument and cannot be used with the ``secret-store`` argument
 
-### `external-secrets-mount-path` (optional,string)
+### `mount-path-external-secrets` (optional,string)
 
 Sets the mount path of the external secrets 
 
