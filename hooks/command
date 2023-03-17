@@ -99,6 +99,12 @@ function tail_logs {
 if [[ -n $external_secrets || -n $external_secrets_list || -n $secret_store || -n $cluster_store ]]; then
   echo "--- :kubernetes: Creating Secrets"
   
+  # Check if the ExternalSecrets CRD exists
+  if [[ -z $(kubectl get crd externalsecrets.external-secrets.io 2>/dev/null) ]]; then
+    echo "External Secrets CRD not found. Is the External Secrets Operator installed in the cluster?" >&2
+    exit 42
+  fi
+
   # A ClusterStore and SecretStore cannot be both used in the same step
   if [[ -n $secret_store && -n $cluster_store ]]; then
     echo "A ClusterStore and SecretStore cannot be used in the same step.. Exiting."
@@ -106,7 +112,7 @@ if [[ -n $external_secrets || -n $external_secrets_list || -n $secret_store || -
   fi 
   
   # If a store is defined, make sure secrets are defined
-  if ([ -n $cluster_store ] || [ -n $external_secrets ]) && [ -z $external_secrets_list ]; then 
+  if [[ -n $cluster_store || -n $external_secrets ]] && [[ -z $external_secrets_list ]]; then
     echo "A Store is defined, but no External Secrets are defined.. Exiting"
     exit 42
   fi
