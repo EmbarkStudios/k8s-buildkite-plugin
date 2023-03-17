@@ -50,7 +50,7 @@ configuration:
     cluster-store:
       type: string
     external-secrets:
-      type: [string,array]
+      type: [string, array]
     mount-path-external-secrets:
       type: string
       default: "/externalsecrets"

@@ -198,7 +198,9 @@ Example: `buildkite-secret`
 
 ### `external-secrets` (optional, string or array)
 
-Mount one or many secrets as a directory inside the container from an external source using [ExternalSecrets](https://external-secrets.io/v0.7.2/). Must be in the form `secretKey:externalProperty:externalKey`.
+**The [External Secrets Operator](https://external-secrets.io/) must be installed in your cluster to use the ``external-secrets`` arguments**.
+
+Mount one or many secrets as a directory inside the container from an external source using [ExternalSecrets](https://external-secrets.io/). Must be in the form `secretKey:externalProperty:externalKey`.
 
 `external-secrets-mount-path` can be set to change where the secrets are mounted, but they must all be mounted to the same location.
 `secret-store` or `cluster-store` must be defined to specify what existing SecretStore to pull data from. Only one can be defined.
@@ -307,7 +309,7 @@ If set to `true`, the resulting k8s job spec is printed to the log. This can be 
 
 ### `print-resulting-secret-spec` (optional, boolean)
 
-If exeternal secrets are being used, will print the secret spec to the log. This can be useful when debugging.
+If external secrets are being used, will print the secret spec to the log. This can be useful when debugging.
 
 ### `job-backoff-limit` (optional, integer)
 

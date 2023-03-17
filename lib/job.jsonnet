@@ -204,7 +204,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
       }],
   },
 
-  local hostPathMount = { 
+  local hostPathMount = {
     local cfg =
       std.mapWithIndex(
         function(i, v) ['hostpath-' + i] + v,
@@ -251,10 +251,10 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     ],
 
     mount: if std.length(cfg) > 0 then [
-      { name: 'externalsecrets', mountPath: env.BUILDKITE_PLUGIN_K8S_MOUNT_PATH_EXTERNAL_SECRETS}
+      { name: 'externalsecrets', mountPath: env.BUILDKITE_PLUGIN_K8S_MOUNT_PATH_EXTERNAL_SECRETS }
     ] else [],
     volume: if std.length(cfg) > 0 then [
-      { name: 'externalsecrets', secret: {secretName: jobName, defaultMode: 256},}
+      { name: 'externalsecrets', secret: { secretName: jobName, defaultMode: 256}, }
     ] else [],
   },
 

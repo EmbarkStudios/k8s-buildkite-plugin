@@ -13,8 +13,6 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
         BUILDKITE_PLUGIN_K8S_CLUSTER_STORE: '',
     } + agentEnv,
 
-
-
     local storeType = 
         if env.BUILDKITE_PLUGIN_K8S_SECRET_STORE == '' then "ClusterStore"
         else "SecretStore",
@@ -31,7 +29,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
                 && env[f] != ''
         ],
         data: [
-            { secretKey: c[0], remoteRef: {key:c[1],property:c[2] } }
+            { secretKey: c[0], remoteRef: { key: c[1], property: c[2] } }
             for c in cfg 
         ],
     },
@@ -50,5 +48,5 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
         target: {
             name: jobName,
         } 
-    }+ secretsData,
+    } + secretsData,
 })
