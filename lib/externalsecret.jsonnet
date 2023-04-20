@@ -14,7 +14,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     } + agentEnv,
 
     local storeType = 
-        if env.BUILDKITE_PLUGIN_K8S_SECRET_STORE == '' then "ClusterStore"
+        if env.BUILDKITE_PLUGIN_K8S_SECRET_STORE == '' then "ClusterSecretStore"
         else "SecretStore",
 
     local storeName =
