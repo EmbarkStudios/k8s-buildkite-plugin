@@ -28,7 +28,7 @@ external_secrets_list=${BUILDKITE_PLUGIN_K8S_EXTERNAL_SECRETS_0:-}
 # If External Secrets were used, clean them up
 if [[ -n $external_secrets || -n $external_secrets_list ]]; then
   echo "Deleting ExternalSecrets"
-  kubectl delete ExternalSecret $job_name
+  kubectl delete ExternalSecret "$job_name"
 fi 
 
 if [[ "$job_cleanup_after_finished_via_plugin" != "true" ]]; then

@@ -142,15 +142,14 @@ if [[ -n $external_secrets || -n $external_secrets_list || -n $secret_store || -
 
   set +e
   echo "$external_secret_spec" | kubectl apply -f -
-  external_secret_apply_exit_code="$?"
   set -e
 
   echo "Waiting for Secret to become available"
   while [ $SECONDS -lt $secret_apply_end_time ]; do
     # Check if the secret exists
-    secret_exists=$(kubectl get secret $job_name > /dev/null 2>&1; echo $?)
-    external_secret_status=`kubectl get ExternalSecret $job_name -o json | jq -r '.status.conditions[0].status'`
-    if [ $secret_exists != 1 ] && [ $external_secret_status == "True" ]; then
+    secret_exists=$(kubectl get secret "$job_name" > /dev/null 2>&1; echo $?)
+    external_secret_status=`kubectl get ExternalSecret "$job_name" -o json | jq -r '.status.conditions[0].status'`
+    if [ "$secret_exists" != 1 ] && [ "$external_secret_status" == "True" ]; then
       echo "Secret Created"
       break
     fi
@@ -158,7 +157,7 @@ if [[ -n $external_secrets || -n $external_secrets_list || -n $secret_store || -
   
   if [ $secret_exists == 1 ] || [ $external_secret_status != "True" ]; then
     echo "Secret creation failed, check ExternalSecrets logs in your cluster"
-    status=$(kubectl get ExternalSecret $job_name -o json | jq -r '.status.conditions[0].message')
+    status=$(kubectl get ExternalSecret "$job_name" -o json | jq -r '.status.conditions[0].message')
     echo "External Secret Status: $status" 
     return 42
   fi
