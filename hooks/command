@@ -98,7 +98,7 @@ function tail_logs {
 # External Secrets Handler
 if [[ -n $external_secrets || -n $external_secrets_list || -n $secret_store || -n $cluster_store ]]; then
   echo "--- :kubernetes: Creating Secrets"
-  
+
   # Check if the ExternalSecrets CRD exists
   if [[ -z $(kubectl get crd externalsecrets.external-secrets.io 2>/dev/null) ]]; then
     echo "External Secrets CRD not found. Is the External Secrets Operator installed in the cluster?" >&2
@@ -109,8 +109,8 @@ if [[ -n $external_secrets || -n $external_secrets_list || -n $secret_store || -
   if [[ -n $secret_store && -n $cluster_store ]]; then
     echo "A ClusterStore and SecretStore cannot be used in the same step.. Exiting."
     exit 42
-  fi 
-  
+  fi
+
   # If a store is defined, make sure secrets are defined
   if [[ -n $cluster_store || -n $external_secrets ]] && [[ -z $external_secrets_list ]]; then
     echo "A Store is defined, but no External Secrets are defined.. Exiting"
@@ -121,7 +121,7 @@ if [[ -n $external_secrets || -n $external_secrets_list || -n $secret_store || -
   if [[ -n $external_secrets && -z $secret_store && -z $cluster_store ]]; then
     echo "External Secrets are defined, but no Secret Store is defined.. Exiting."
     exit 42
-  fi 
+  fi
 
   export patchFunc=${BUILDKITE_PLUGIN_K8S_PATCH:-"function(f) f"}
 
@@ -148,17 +148,17 @@ if [[ -n $external_secrets || -n $external_secrets_list || -n $secret_store || -
   while [ $SECONDS -lt $secret_apply_end_time ]; do
     # Check if the secret exists
     secret_exists=$(kubectl get secret "$job_name" > /dev/null 2>&1; echo $?)
-    external_secret_status=`kubectl get ExternalSecret "$job_name" -o json | jq -r '.status.conditions[0].status'`
+    external_secret_status=$(kubectl get ExternalSecret "$job_name" -o json | jq -r '.status.conditions[0].status')
     if [ "$secret_exists" != 1 ] && [ "$external_secret_status" == "True" ]; then
       echo "Secret Created"
       break
     fi
   done
-  
-  if [ $secret_exists == 1 ] || [ $external_secret_status != "True" ]; then
+
+  if [ "$secret_exists" == 1 ] || [ "$external_secret_status" != "True" ]; then
     echo "Secret creation failed, check ExternalSecrets logs in your cluster"
     status=$(kubectl get ExternalSecret "$job_name" -o json | jq -r '.status.conditions[0].message')
-    echo "External Secret Status: $status" 
+    echo "External Secret Status: $status"
     return 42
   fi
 fi
