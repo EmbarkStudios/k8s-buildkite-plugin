@@ -45,6 +45,15 @@ configuration:
       type: string
     default-secret-name:
       type: string
+    secret-store:
+      type: string
+    cluster-store:
+      type: string
+    external-secrets:
+      type: [string, array]
+    mount-path-external-secrets:
+      type: string
+      default: "/externalsecrets"
     build-path-host-path:
       type: string
     build-path-pvc:
@@ -68,6 +77,9 @@ configuration:
     use-agent-node-affinity:
       type: boolean
     print-resulting-job-spec:
+      type: boolean
+      default: false
+    print-resulting-secret-spec:
       type: boolean
       default: false
     job-backoff-limit:
