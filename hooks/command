@@ -12,7 +12,6 @@ if [[ -v "BUILDKITE_PLUGIN_K8S_IS_JOB" ]]; then
 fi
 
 basedir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
-source "${basedir}/lib/kubectl.sh"
 
 # Ensure a name is a valid k8s resource name.
 function sanitize() {
@@ -59,7 +58,7 @@ function cleanup {
 
   if [[ "$jobs_cleanup_via_plugin" == "true" ]]; then
     # Delete all jobs older than a day.
-    kubectl_wrapper delete job "$(kubectl_wrapper get job -l buildkite/plugin=k8s | awk 'match($4,/[0-9]+d/) {print $1}')" 2>/dev/null || true
+    "$basedir/lib/kubectl_wrapper.sh" delete job "$($basedir/lib/kubectl_wrapper.sh get job -l buildkite/plugin=k8s | awk 'match($4,/[0-9]+d/) {print $1}')" 2>/dev/null || true
   fi
 }
 
@@ -76,7 +75,7 @@ function tail_logs {
   while true;
   do
     set +e
-    log_snapshot="$(timeout "$log_attempt_timeout_sec" kubectl_wrapper logs --limit-bytes "1024" "pod/$pod_name" --container "$container_name" 2>/dev/null)"
+    log_snapshot="$(timeout "$log_attempt_timeout_sec" "$basedir/lib/kubectl_wrapper.sh" logs --limit-bytes "1024" "pod/$pod_name" --container "$container_name" 2>/dev/null)"
     set -e
     if [[ -n "$log_snapshot" ]]; then
       break
@@ -88,7 +87,7 @@ function tail_logs {
   #   1) It can fail due to pod not being initialized yet: "Error from server (BadRequest): container "step" in pod "somepod" is waiting to start: PodInitializing"
   #   2) It can fail mid-streaming, in this case we unfortunately will display logs multiple times (partially).
   #   3) It can hang not providing any result, that's why we check not only exit code but also contents in the loop above.
-  while ! kubectl_wrapper logs --follow "pod/$pod_name" --container "$container_name" 2>/dev/null;
+  while ! "$basedir/lib/kubectl_wrapper.sh" logs --follow "pod/$pod_name" --container "$container_name" 2>/dev/null;
   do
     sleep "$log_loop_retry_interval_sec"
   done
@@ -101,7 +100,7 @@ if [[ -n $external_secrets || -n $external_secrets_list || -n $secret_store || -
   echo "--- :kubernetes: Creating Secrets"
 
   # Check if the ExternalSecrets CRD exists
-  if [[ -z $(kubectl_wrapper get crd externalsecrets.external-secrets.io 2>/dev/null) ]]; then
+  if [[ -z $("$basedir/lib/kubectl_wrapper.sh" get crd externalsecrets.external-secrets.io 2>/dev/null) ]]; then
     echo "External Secrets CRD not found. Is the External Secrets Operator installed in the cluster?" >&2
     exit 42
   fi
@@ -142,14 +141,14 @@ if [[ -n $external_secrets || -n $external_secrets_list || -n $secret_store || -
   readonly secret_apply_end_time=$((SECONDS+30))
 
   set +e
-  echo "$external_secret_spec" | kubectl_wrapper apply -f -
+  echo "$external_secret_spec" | "$basedir/lib/kubectl_wrapper.sh" apply -f -
   set -e
 
   echo "Waiting for Secret to become available"
   while [ $SECONDS -lt $secret_apply_end_time ]; do
     # Check if the secret exists
-    secret_exists=$(kubectl_wrapper get secret "$job_name" > /dev/null 2>&1; echo $?)
-    external_secret_status=$(kubectl_wrapper get ExternalSecret "$job_name" -o json | jq -r '.status.conditions[0].status')
+    secret_exists=$("$basedir/lib/kubectl_wrapper.sh" get secret "$job_name" > /dev/null 2>&1; echo $?)
+    external_secret_status=$("$basedir/lib/kubectl_wrapper.sh" get ExternalSecret "$job_name" -o json | jq -r '.status.conditions[0].status')
     if [ "$secret_exists" != 1 ] && [ "$external_secret_status" == "True" ]; then
       echo "Secret Created"
       break
@@ -158,7 +157,7 @@ if [[ -n $external_secrets || -n $external_secrets_list || -n $secret_store || -
 
   if [ "$secret_exists" == 1 ] || [ "$external_secret_status" != "True" ]; then
     echo "Secret creation failed, check ExternalSecrets logs in your cluster"
-    status=$(kubectl_wrapper get ExternalSecret "$job_name" -o json | jq -r '.status.conditions[0].message')
+    status=$("$basedir/lib/kubectl_wrapper.sh" get ExternalSecret "$job_name" -o json | jq -r '.status.conditions[0].message')
     echo "External Secret Status: $status"
     return 42
   fi
@@ -178,7 +177,7 @@ job_spec="$(jsonnet \
   "${basedir}/lib/job.jsonnet")"
 
 if [[ "$use_agent_node_affinity" == "true" ]]; then
-  agent_spec="$(kubectl_wrapper get pod "$(cat /etc/hostname)" -o json)"
+  agent_spec="$("$basedir/lib/kubectl_wrapper.sh" get pod "$(cat /etc/hostname)" -o json)"
   for field in affinity tolerations nodeSelector; do
     agent_value=$(echo "$agent_spec" | jq ".spec.$field")
     job_spec="$(echo "$job_spec" | jq ".spec.template.spec.$field=$agent_value")"
@@ -195,7 +194,7 @@ job_apply_exit_code=""
 while [[ "$((SECONDS - job_apply_start_time))" -lt "$job_apply_timeout_sec" ]]
 do
   set +e
-  echo "$job_spec" | kubectl_wrapper apply -f -
+  echo "$job_spec" | "$basedir/lib/kubectl_wrapper.sh" apply -f -
   job_apply_exit_code="$?"
   set -e
 
@@ -221,13 +220,13 @@ while true
 do
   exit_status=0
   set +e
-  pod_name=$(kubectl_wrapper get pod -l "job-name=$job_name" --output=jsonpath="{.items[*].metadata.name}" 2>&1)
+  pod_name=$("$basedir/lib/kubectl_wrapper.sh" get pod -l "job-name=$job_name" --output=jsonpath="{.items[*].metadata.name}" 2>&1)
   exit_status=$?
   set -e
 
   if [[ $exit_status -ne 0 && "$pod_name" == *NotFound* ]]; then
       set +e
-      jobstatus=$(kubectl_wrapper get job "$job_name" -o 'jsonpath={.status.conditions[].type}')
+      jobstatus=$("$basedir/lib/kubectl_wrapper.sh" get job "$job_name" -o 'jsonpath={.status.conditions[].type}')
       set -e
       if [[ "$jobstatus" == "Failed" ]]; then
         echo "Warning: exiting because no pod was found and job status was Failed"
@@ -263,7 +262,7 @@ counter="$timeout"
 jobstatus=""
 while [[ -z "$jobstatus" ]] ; do
   set +e
-  jobstatus=$(kubectl_wrapper get job "${job_name}" -o 'jsonpath={.status.conditions[].type}')
+  jobstatus=$("$basedir/lib/kubectl_wrapper.sh" get job "${job_name}" -o 'jsonpath={.status.conditions[].type}')
   set -e
 
   if [[ -n "$jobstatus" ]]; then
@@ -294,7 +293,7 @@ else
   while true
   do
     set +e
-    pod_json=$(kubectl_wrapper get pod "$pod_name" -o json 2>&1)
+    pod_json=$("$basedir/lib/kubectl_wrapper.sh" get pod "$pod_name" -o json 2>&1)
     get_pod_status=$?
     if [[ "$get_pod_status" -eq 0 ]]; then
       init_container_status="$(echo "$pod_json" | jq ".status.initContainerStatuses[0].state.terminated.exitCode")"
