@@ -286,7 +286,7 @@ do
 done
 
 status=""
-if [[ "$jobstatus" == "Complete" ]] ; then
+if [[ "$jobstatus" == "Complete" || "$jobstatus" == "SuccessCriteriaMet" ]] ; then
   echo "success"
   status="0"
 else
