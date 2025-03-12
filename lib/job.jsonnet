@@ -317,11 +317,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
         labels: labels,
         # Take all the same annotations as the job itself on the pod, but also add the istio inject false annotation
         # Istio gets in the way of many jobs
-        # Mark Pod as NOT safe to evict for ClusterAutoscaler during cluster scale up/down.
-        annotations: annotations {
-          'sidecar.istio.io/inject': 'false',
-          'cluster-autoscaler.kubernetes.io/safe-to-evict': 'false'
-        },
+        annotations: annotations { 'sidecar.istio.io/inject': 'false' },
       },
       spec: {
         activeDeadlineSeconds: deadline,
