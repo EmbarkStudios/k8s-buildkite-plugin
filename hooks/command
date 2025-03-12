@@ -37,15 +37,7 @@ readonly log_complete_retry_interval_sec="${BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_RE
 readonly log_complete_timeout_sec="${BUILDKITE_PLUGIN_K8S_LOG_COMPLETE_TIMEOUT_SEC:-30}"
 readonly use_agent_node_affinity=${BUILDKITE_PLUGIN_K8S_USE_AGENT_NODE_AFFINITY:-false}
 readonly print_resulting_job_spec=${BUILDKITE_PLUGIN_K8S_PRINT_RESULTING_JOB_SPEC:-false}
-readonly print_resulting_secret_spec=${BUILDKITE_PLUGIN_K8S_PRINT_RESULTING_SECRET_SPEC:-false}
 readonly jobs_cleanup_via_plugin=${BUILDKITE_PLUGIN_K8S_JOBS_CLEANUP_VIA_PLUGIN:-}
-
-# External Secrets variables
-external_secrets=${BUILDKITE_PLUGIN_K8S_EXTERNAL_SECRETS:-}
-external_secrets_list=${BUILDKITE_PLUGIN_K8S_EXTERNAL_SECRETS_0:-}
-cluster_store=${BUILDKITE_PLUGIN_K8S_CLUSTER_STORE:-}
-secret_store=${BUILDKITE_PLUGIN_K8S_SECRET_STORE:-}
-
 
 bootstrap_container_log_complete_marker_file="$(mktemp)"
 readonly bootstrap_container_log_complete_marker_file
@@ -94,76 +86,6 @@ function tail_logs {
 
   echo "0" > "$log_completion_marker_file"
 }
-
-# External Secrets Handler
-if [[ -n $external_secrets || -n $external_secrets_list || -n $secret_store || -n $cluster_store ]]; then
-  echo "--- :kubernetes: Creating Secrets"
-
-  # Check if the ExternalSecrets CRD exists
-  if [[ -z $(kubectl get crd externalsecrets.external-secrets.io 2>/dev/null) ]]; then
-    echo "External Secrets CRD not found. Is the External Secrets Operator installed in the cluster?" >&2
-    exit 42
-  fi
-
-  # A ClusterStore and SecretStore cannot be both used in the same step
-  if [[ -n $secret_store && -n $cluster_store ]]; then
-    echo "A ClusterStore and SecretStore cannot be used in the same step.. Exiting."
-    exit 42
-  fi
-
-  # If a store is defined, make sure secrets are defined
-  if [[ -n $cluster_store || -n $external_secrets ]] && [[ -z $external_secrets_list ]]; then
-    echo "A Store is defined, but no External Secrets are defined.. Exiting"
-    exit 42
-  fi
-
-  # If a secret is defined, make sure a secret store is also defined
-  if [[ -n $external_secrets && -z $secret_store && -z $cluster_store ]]; then
-    echo "External Secrets are defined, but no Secret Store is defined.. Exiting."
-    exit 42
-  fi
-
-  export patchFunc=${BUILDKITE_PLUGIN_K8S_PATCH:-"function(f) f"}
-
-  external_secret_spec="$(jsonnet \
-    --tla-str "jobName=${job_name}" \
-    --tla-str-file "stepEnvFile=${BUILDKITE_ENV_FILE}" \
-    --tla-code "agentEnv=$(jq -c -n env)" \
-    --tla-code patchFunc \
-    "${basedir}/lib/externalsecret.jsonnet")"
-
-  if [[ "$print_resulting_secret_spec" == "true" ]]; then
-    echo -e "Resulting k8s ExternalSecret spec:\n$external_secret_spec"
-  fi
-
-  secret_exists=""
-  external_secret_status=""
-  readonly secret_apply_end_time=$((SECONDS+30))
-
-  set +e
-  echo "$external_secret_spec" | kubectl apply -f -
-  set -e
-
-  echo "Waiting for Secret to become available"
-  while [ $SECONDS -lt $secret_apply_end_time ]; do
-    # Check if the secret exists
-    secret_exists=$(kubectl get secret "$job_name" > /dev/null 2>&1; echo $?)
-    external_secret_status=$(kubectl get ExternalSecret "$job_name" -o json | jq -r '.status.conditions[0].status')
-    if [ "$secret_exists" != 1 ] && [ "$external_secret_status" == "True" ]; then
-      echo "Secret Created"
-      break
-    fi
-  done
-
-  if [ "$secret_exists" == 1 ] || [ "$external_secret_status" != "True" ]; then
-    echo "Secret creation failed, check ExternalSecrets logs in your cluster"
-    status=$(kubectl get ExternalSecret "$job_name" -o json | jq -r '.status.conditions[0].message')
-    echo "External Secret Status: $status"
-    return 42
-  fi
-fi
-# End External Secrets Handler
-
 
 echo "--- :kubernetes: Starting Kubernetes Job"
 

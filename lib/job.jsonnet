@@ -31,7 +31,6 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     BUILDKITE_PLUGIN_K8S_INIT_IMAGE: 'embarkstudios/k8s-buildkite-agent@sha256:1d88791315ed6b0b49a64055bc71c5a9a0b1953e387f99d25299ed06ccea5dbd',
     BUILDKITE_PLUGIN_K8S_ALWAYS_PULL: false,
     BUILDKITE_PLUGIN_K8S_IMAGE_PULL_SECRET: '',
-    BUILDKITE_PLUGIN_K8S_MOUNT_PATH_EXTERNAL_SECRETS: "/externalsecrets",
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_HOST_PATH: '',
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_PVC: '',
     BUILDKITE_PLUGIN_K8S_GIT_MIRRORS_HOST_PATH: '',
@@ -234,30 +233,13 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     ],
     mount: [
       { name: c[0], mountPath: c[1] }
-      for c in cfg 
+      for c in cfg
     ],
     volume: [
       { name: c[0], secret: { secretName: c[0], defaultMode: 256 } }
-      for c in cfg 
-    ]
-  },
-
-  local externalSecrets = {
-    local cfg = [
-      env[f]
-      for f in std.objectFields(env)
-      if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_EXTERNAL_SECRETS')
-        && env[f] != ''
+      for c in cfg
     ],
-
-    mount: if std.length(cfg) > 0 then [
-      { name: 'externalsecrets', mountPath: env.BUILDKITE_PLUGIN_K8S_MOUNT_PATH_EXTERNAL_SECRETS }
-    ] else [],
-    volume: if std.length(cfg) > 0 then [
-      { name: 'externalsecrets', secret: { secretName: jobName, defaultMode: 256}, }
-    ] else [],
   },
-
 
   local agentMount =
     if env.BUILDKITE_PLUGIN_K8S_MOUNT_BUILDKITE_AGENT == 'false'
@@ -358,7 +340,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
               { mountPath: env.BUILDKITE_PLUGIN_K8S_WORKDIR, name: 'build', subPath: buildSubPath },
               { mountPath: '/build', name: 'build', subPath: buildSubPath },
               { mountPath: '/git-mirrors', name: 'git-mirrors' },
-            ] + secretMount.mount + externalSecrets.mount + hostPathMount.mount + agentMount,
+            ] + secretMount.mount + hostPathMount.mount + agentMount,
             workingDir: '/build',
           } + commandArgs,
         ],
@@ -366,7 +348,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
           { name: 'build' } + buildVolume,
           { name: 'git-mirrors' } + gitMirrorsVolume,
           { name: 'buildkite-agent', emptyDir: {} },
-        ] + gitCredentials.volume + gitSSH.volume + secretMount.volume + externalSecrets.volume + hostPathMount.volume + defaultSecretsMounts.volume,
+        ] + gitCredentials.volume + gitSSH.volume + secretMount.volume + hostPathMount.volume + defaultSecretsMounts.volume,
       },
     },
   },
