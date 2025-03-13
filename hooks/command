@@ -298,10 +298,8 @@ else
     if [[ "$get_pod_status" -eq 0 ]]; then
       init_container_status="$(echo "$pod_json" | jq ".status.initContainerStatuses[0].state.terminated.exitCode")"
       if [[ -n "$init_container_status" && "$init_container_status" != "0" ]]; then
-# EMBARK CHANGE: patrik.akerberg - try to clarify it's not necessarily an infra failure
         echo "Warning: init container failed with exit code $init_container_status, either the server failed to boot or it's a infra failure in the test cluster"
         echo "Start by looking at logdump link above if there is one, if you don't understand what happened reach out on #game-servers or #game-delivery"
-# EMBARK CHANGE: patrik.akerberg - end
         status="$init_container_status"
       else
         if container_status="$(echo "$pod_json" | jq -e ".status.containerStatuses[0].state.terminated.exitCode")"; then
