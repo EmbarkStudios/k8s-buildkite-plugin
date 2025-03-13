@@ -1,7 +1,7 @@
 steps:
   - name: shellcheck hooks
     agents:
-      queue: monorepo-ci
+      queue: src-monorepo-tasks
       os: linux
     command:
       - echo "Running shellcheck"
@@ -13,7 +13,7 @@ steps:
           use-agent-node-affinity: true
   - name: shellcheck self-test
     agents:
-      queue: monorepo-ci
+      queue: src-monorepo-tasks
       os: linux
     command:
       - echo "Running shellcheck"
@@ -27,7 +27,7 @@ steps:
   - name: Build and publish k8s-buildkite-agent container image
     branches: 'master'
     agents:
-      queue: monorepo-ci
+      queue: src-monorepo-tasks
       os: linux
     plugins:
       - EmbarkStudios/k8s#1.2.6:
@@ -44,7 +44,7 @@ steps:
   - name: Build and publish k8s-buildkite-agent CI-debug container image
     branches: '!master'
     agents:
-      queue: monorepo-ci
+      queue: src-monorepo-tasks
       os: linux
     plugins:
       - EmbarkStudios/k8s#1.2.6:
