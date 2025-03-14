@@ -297,7 +297,7 @@ else
     get_pod_status=$?
     if [[ "$get_pod_status" -eq 0 ]]; then
       init_container_status="$(echo "$pod_json" | jq ".status.initContainerStatuses[0].state.terminated.exitCode")"
-      if [[ -n "$init_container_status" && "$init_container_status" != "0" ]]; then
+      if [[ -n "$init_container_status" && "$init_container_status" != "null" && "$init_container_status" != "0" ]]; then
         echo "Warning: init container failed with exit code $init_container_status"
         status="$init_container_status"
       else
