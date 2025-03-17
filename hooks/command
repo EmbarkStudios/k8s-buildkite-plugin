@@ -213,8 +213,6 @@ fi
 
 echo "Timeout: ${timeout}s"
 
-echo "--- :kubernetes: Running image: ${BUILDKITE_PLUGIN_K8S_IMAGE}"
-
 counter="$timeout"
 while true
 do
@@ -251,11 +249,11 @@ echo "Pod is running: $pod_name"
 
 # not set or not empty - "" disables
 if [[ ! -v "BUILDKITE_PLUGIN_K8S_INIT_IMAGE" || -n "${BUILDKITE_PLUGIN_K8S_INIT_IMAGE}" ]]; then
-    echo "--- :kubernetes: bootstrap container"
+    echo "--- :kubernetes: Running init-container image: ${BUILDKITE_PLUGIN_K8S_INIT_IMAGE}"
     tail_logs "$pod_name" "bootstrap" "$bootstrap_container_log_complete_marker_file"
 fi
 
-echo "+++ :kubernetes: step container"
+echo "+++ :kubernetes: Running image: ${BUILDKITE_PLUGIN_K8S_IMAGE}"
 tail_logs "$pod_name" "step" "$step_container_log_complete_marker_file" &
 
 counter="$timeout"
@@ -276,7 +274,7 @@ while [[ -z "$jobstatus" ]] ; do
   fi
 done
 
-echo "--- :kubernetes: Job status: $jobstatus"
+echo "job status: $jobstatus"
 
 # Wait for logs to be fully printed, printing runs in a separate process and we're racing with it.
 readonly log_complete_start_time="$SECONDS"
@@ -287,7 +285,7 @@ done
 
 status=""
 if [[ "$jobstatus" == "Complete" || "$jobstatus" == "SuccessCriteriaMet" ]] ; then
-  echo "success"
+  echo "success (${jobstatus})"
   status="0"
 else
   while true
