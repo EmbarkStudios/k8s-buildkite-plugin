@@ -228,18 +228,25 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
 
   local secretMount = {
     local cfg = [
-      std.splitLimit(env[f], ':', 1)
+      local parts = std.splitLimit(env[f], ':', 1);
+      // Filter the array to only include parts that have two elements
+      if std.length(parts) == 2 then
+        parts
+      else
+        null
       for f in std.objectFields(env)
       if std.startsWith(f, 'BUILDKITE_PLUGIN_K8S_MOUNT_SECRET')
-         && env[f] != ''
+        && env[f] != ''
     ],
+    local filteredCfg = [ c for c in cfg if c != null ],
+
     mount: [
       { name: c[0], mountPath: c[1] }
-      for c in cfg
+      for c in filteredCfg
     ],
     volume: [
       { name: c[0], secret: { secretName: c[0], defaultMode: std.parseInt(env.BUILDKITE_PLUGIN_K8S_MOUNT_SECRET_PERMISSIONS) } }
-      for c in cfg
+      for c in filteredCfg
     ]
   },
 
