@@ -29,6 +29,8 @@ configuration:
       type: [string, array]
     mount-secret:
       type: [string, array]
+    mount-secret-permissions:
+      type: string
     privileged:
       type: boolean
     secret-name:

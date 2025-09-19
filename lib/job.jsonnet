@@ -36,6 +36,7 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     BUILDKITE_PLUGIN_K8S_BUILD_PATH_PVC: '',
     BUILDKITE_PLUGIN_K8S_GIT_MIRRORS_HOST_PATH: '',
     BUILDKITE_PLUGIN_K8S_MOUNT_SECRET: '',
+    BUILDKITE_PLUGIN_K8S_MOUNT_SECRET_PERMISSIONS: '256',
     BUILDKITE_PLUGIN_K8S_MOUNT_BUILDKITE_AGENT: 'true',
     BUILDKITE_PLUGIN_K8S_PRIVILEGED: 'false',
     BUILDKITE_PLUGIN_K8S_RESOURCES_REQUEST_CPU: '',
@@ -234,11 +235,11 @@ function(jobName, agentEnv={}, stepEnvFile='', patchFunc=identity) patchFunc({
     ],
     mount: [
       { name: c[0], mountPath: c[1] }
-      for c in cfg 
+      for c in cfg
     ],
     volume: [
-      { name: c[0], secret: { secretName: c[0], defaultMode: 256 } }
-      for c in cfg 
+      { name: c[0], secret: { secretName: c[0], defaultMode: std.parseInt(env.BUILDKITE_PLUGIN_K8S_MOUNT_SECRET_PERMISSIONS) } }
+      for c in cfg
     ]
   },
 

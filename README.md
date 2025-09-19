@@ -184,6 +184,15 @@ Multiple secrets may be mounted by specifying a list of secret/mount pairs.
 
 Example: `my-secret:/my/secret`
 
+### `mount-secret-permissions` (optional, string)
+
+The file permissions for mounted secrets. Must be a decimal number representing the octal file mode.
+
+Default: `256` (octal `0400` - read-only for owner)
+Common values: `420` (octal `0644` - readable by all), `292` (octal `0444` - read-only for all)
+
+Example: `420`
+
 ### `default-secret-name` (optional, string)
 
 The name of the secret containing the buildkite agent token, ssh and git credentials used for bootstrapping in the init container. The key names of the secret are not configurable and as such must contain the following:
@@ -219,19 +228,19 @@ Will create an ExternalSecret resource pulling from the vault-backend Secret Sto
 
 ### `secret-store` (optional, string)
 
-Describes the SecretStore to pull ExternalSecrets from. 
+Describes the SecretStore to pull ExternalSecrets from.
 
 Must be used with the ``external-secrets`` argument and cannot be used with the `cluster-store` argument
 
 ### `cluster-store` (optional, string)
 
-Describes the ClusterStore to pull ExternalSecrets from. 
+Describes the ClusterStore to pull ExternalSecrets from.
 
 Must be used with the ``external-secrets`` argument and cannot be used with the ``secret-store`` argument
 
 ### `mount-path-external-secrets` (optional,string)
 
-Sets the mount path of the external secrets 
+Sets the mount path of the external secrets
 
 Default: ``/externalsecrets``
 
